@@ -1,0 +1,71 @@
+version: '3.8'
+
+services:
+  # База данных
+  db:
+    image: postgres:15
+    container_name: diplom_db
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"  # только для разработки
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Миграции
+  migrator:
+    build: ./backend
+    container_name: diplom_migrator
+    environment:
+      DATABASE_URL: postgresql://${DB_USER}:${DB_PASSWORD}@db:5432/${DB_NAME}
+    depends_on:
+      db:
+        condition: service_healthy
+    command: ["alembic", "upgrade", "head"]
+    # Этот контейнер выполнит миграции и завершится
+
+  # Бэкенд
+  backend:
+    build: ./backend
+    container_name: diplom_backend
+    environment:
+      DATABASE_URL: postgresql://${DB_USER}:${DB_PASSWORD}@db:5432/${DB_NAME}
+      REDIS_URL: redis://redis:6379/0
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+      migrator:
+        condition: service_completed_successfully
+    # volumes:
+    #   - ./backend:/app  # только для разработки (hot reload)
+
+  # Фронтенд
+  frontend:
+    build: ./frontend
+    container_name: diplom_frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    # volumes:
+    #   - ./frontend/dist:/usr/share/nginx/html  # только для разработки (hot reload)
+
+  # Redis (кэширование)
+  # redis:
+  #   image: redis:alpine
+  #   container_name: project_redis
+  #   ports:
+  #     - "6379:6379"
+  #   restart: unless-stopped
+
+volumes:
+  postgres_data:
