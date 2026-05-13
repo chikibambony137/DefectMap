@@ -4,3 +4,6 @@ from models.defect import Defect
 from models.defect_criticality import DefectCriticality
 from models.defect_type import DefectType
 from models.equipment import Equipment
+from models.manufacturer import Manufacturer
+from models.defect_status import DefectStatus
+from models.equipment_status import EquipmentStatus
