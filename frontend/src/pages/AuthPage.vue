@@ -65,6 +65,11 @@ const onSubmit = async () => {
 
     const data = await response.json();
 
+    if (response.status === 401) {
+      alert('Неверный логин или пароль!')
+      return;
+    }
+
     if (!response.ok) {
       throw new Error(data.detail || "Ошибка авторизации");
     }
