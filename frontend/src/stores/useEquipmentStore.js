@@ -1,4 +1,5 @@
 import { defineStore } from "pinia";
+import { apiRequest } from "./api";
 
 export const useEquipmentStore = defineStore("equipment", {
   state: () => ({
@@ -10,63 +11,38 @@ export const useEquipmentStore = defineStore("equipment", {
     async fetchEquipment() {
       this.loading = true;
       try {
-        const res = await fetch("http://localhost:8000/equipment", {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("access_token")}`,
-          },
-        });
-        if (res.status === 401) {
-          localStorage.removeItem("access_token");
-          router.push("/login");
-        }
-        this.items = await res.json();
+        const res = await apiRequest("/equipment");
+        if (res) this.items = await res.json();
       } finally {
         this.loading = false;
       }
     },
 
     async addEquipment(equipment) {
-      const res = await fetch("http://localhost:8000/equipment", {
+      const res = await apiRequest("/equipment", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("access_token")}`,
-        },
         body: JSON.stringify(equipment),
       });
-      const newItem = await res.json();
-      this.items.push(newItem); // добавить в кэш
+      if (res?.ok) await this.fetchEquipment();
     },
 
     async updateEquipment(equipment, equipmentId) {
-      console.log(equipment);
-      const res = await fetch(`http://localhost:8000/equipment/${equipmentId}`, {
+      const res = await apiRequest(`/equipment/${equipmentId}`, {
         method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("access_token")}`,
-        },
         body: JSON.stringify(equipment),
       });
-      if (res.ok) this.fetchEquipment();
-      else console.log("error");
+      if (res?.ok) await this.fetchEquipment();
+      else console.error("updateEquipment error");
     },
 
-    async removeEquipment(equipment) {
-      const res = await fetch(
-        `http://localhost:8000/equipment/${equipment.id}`,
-        {
-          method: "DELETE",
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("access_token")}`,
-          },
-        },
-      );
-
-      if (res.ok) {
-        this.fetchEquipment();
+    async removeEquipment(equipmentId) {
+      const res = await apiRequest(`/equipment/${equipmentId}`, {
+        method: "DELETE",
+      });
+      if (res?.ok) {
+        await this.fetchEquipment();
         alert("Успешно удалено!");
-      } else console.log("error");
+      } else console.error("removeEquipment error");
     },
   },
 });

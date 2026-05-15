@@ -1,4 +1,5 @@
 import { defineStore } from "pinia";
+import { apiRequest } from "./api";
 
 export const useDefectStore = defineStore("defects", {
   state: () => ({
@@ -10,65 +11,38 @@ export const useDefectStore = defineStore("defects", {
     async fetchDefects() {
       this.loading = true;
       try {
-        const res = await fetch("http://localhost:8000/defects/geo", {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("access_token")}`,
-          },
-        });
-        if (res.status === 401) {
-          localStorage.removeItem("access_token");
-          router.push("/login");
-        }
-        this.defects = await res.json();
+        const res = await apiRequest("/defects/geo");
+        if (res) this.defects = await res.json();
       } finally {
         this.loading = false;
       }
     },
 
     async addDefect(defect) {
-      console.log(defect);
-      const res = await fetch("http://localhost:8000/defects", {
+      const res = await apiRequest("/defects", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("access_token")}`,
-        },
         body: JSON.stringify(defect),
       });
-      const newDefect = await res.json();
-      this.defects.push(newDefect);
+      if (res?.ok) await this.fetchDefects();
     },
 
     async updateDefect(defect, defectId) {
-      const res = await fetch(`http://localhost:8000/defects/${defectId}`, {
+      const res = await apiRequest(`/defects/${defectId}`, {
         method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("access_token")}`,
-        },
         body: JSON.stringify(defect),
       });
-      if (res.ok) {
-        this.fetchDefects();
-      } 
-      else console.log("error");
+      if (res?.ok) await this.fetchDefects();
+      else console.error("updateDefect error");
     },
 
-    async removeDefect(defect) {
-      const res = await fetch(
-        `http://localhost:8000/defects/${defect.id}`,
-        {
-          method: "DELETE",
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("access_token")}`,
-          },
-        },
-      );
-
-      if (res.ok) {
-        this.fetchDefects();
+    async removeDefect(defectId) {
+      const res = await apiRequest(`/defects/${defectId}`, {
+        method: "DELETE",
+      });
+      if (res?.ok) {
+        await this.fetchDefects();
         alert("Успешно удалено!");
-      } else console.log("error");
+      } else console.error("removeDefect error");
     },
   },
 });

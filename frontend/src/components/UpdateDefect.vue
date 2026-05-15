@@ -59,7 +59,7 @@
 
         <q-select
           filled
-          v-model="form.status"
+          v-model="form.status_id"
           :options="statusOptions"
           label="Статус"
           emit-value
@@ -82,33 +82,41 @@ import { ref, computed, onMounted } from "vue";
 import { useDefectStore } from "src/stores/useDefectStore";
 import { useEquipmentStore } from "src/stores/useEquipmentStore";
 import { useDefectTypeStore } from "src/stores/useDefectTypeStore";
+import { useDefectStatusStore } from "src/stores/useDefectStatusStore";
 
-const props = defineProps({
-  defect: Object,
-});
-
+const props = defineProps({ defect: Object });
 const emit = defineEmits(["close", "updated"]);
+
 const defectStore = useDefectStore();
 const equipmentStore = useEquipmentStore();
 const defectTypeStore = useDefectTypeStore();
+const defectStatusStore = useDefectStatusStore();
 
 onMounted(() => {
   if (!equipmentStore.items.length) equipmentStore.fetchEquipment();
   if (!defectTypeStore.defectTypes.length) defectTypeStore.fetchDefectTypes();
+  if (!defectStatusStore.statuses.length) defectStatusStore.fetchDefectStatuses();
 });
 
 const equipmentOptions = computed(() =>
   equipmentStore.items.map((eq) => ({
     label: `${eq.serial_number} — ${eq.model}`,
     value: eq.id,
-  })),
+  }))
 );
 
 const typeOptions = computed(() =>
   defectTypeStore.defectTypes.map((type) => ({
-    label: `${type.description}`,
+    label: type.description,
     value: type.id,
-  })),
+  }))
+);
+
+const statusOptions = computed(() =>
+  defectStatusStore.statuses.map((s) => ({
+    label: s.name,
+    value: s.id,
+  }))
 );
 
 const criticalityOptions = [
@@ -117,25 +125,17 @@ const criticalityOptions = [
   { label: "Низкая", value: 1 },
 ];
 
-const statusOptions = [
-  { label: "Открыт", value: "open" },
-  { label: "В работе", value: "in_progress" },
-  { label: "Закрыт", value: "closed" },
-];
-
-// копируем данные дефекта в форму, чтобы не мутировать пропс напрямую
 const form = ref({
   equipment_id: props.defect?.equipment_id ?? null,
   title: props.defect?.title ?? "",
   description: props.defect?.description ?? "",
   criticality_id: props.defect?.criticality_id ?? null,
-  status: props.defect?.status ?? null,
+  status_id: props.defect?.status_id ?? null,
   defect_type_id: props.defect?.defect_type_id ?? null,
 });
 
 const onSubmit = async () => {
-  await defectStore.updateDefect({...form.value}, props.defect.id);
-
+  await defectStore.updateDefect({ ...form.value }, props.defect.id);
   alert("Успешно обновлено!");
   emit("updated");
   emit("close");

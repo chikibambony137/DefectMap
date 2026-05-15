@@ -59,7 +59,7 @@
 
         <q-select
           filled
-          v-model="form.status"
+          v-model="form.status_id"
           :options="statusOptions"
           label="Статус"
           emit-value
@@ -82,29 +82,39 @@ import { ref, computed, onMounted } from "vue";
 import { useDefectStore } from "src/stores/useDefectStore";
 import { useEquipmentStore } from "src/stores/useEquipmentStore";
 import { useDefectTypeStore } from "src/stores/useDefectTypeStore";
+import { useDefectStatusStore } from "src/stores/useDefectStatusStore";
 
 const emit = defineEmits(["close", "added"]);
 const defectStore = useDefectStore();
 const equipmentStore = useEquipmentStore();
 const defectTypeStore = useDefectTypeStore();
+const defectStatusStore = useDefectStatusStore();
 
 onMounted(() => {
   if (!equipmentStore.items.length) equipmentStore.fetchEquipment();
   if (!defectTypeStore.defectTypes.length) defectTypeStore.fetchDefectTypes();
+  if (!defectStatusStore.statuses.length) defectStatusStore.fetchDefectStatuses();
 });
 
 const equipmentOptions = computed(() =>
   equipmentStore.items.map((eq) => ({
     label: `${eq.serial_number} — ${eq.model}`,
     value: eq.id,
-  })),
+  }))
 );
 
 const typeOptions = computed(() =>
   defectTypeStore.defectTypes.map((type) => ({
-    label: `${type.description}`,
+    label: type.description,
     value: type.id,
-  })),
+  }))
+);
+
+const statusOptions = computed(() =>
+  defectStatusStore.statuses.map((s) => ({
+    label: s.name,
+    value: s.id,
+  }))
 );
 
 const criticalityOptions = [
@@ -113,18 +123,12 @@ const criticalityOptions = [
   { label: "Низкая", value: 1 },
 ];
 
-const statusOptions = [
-  { label: "Открыт", value: "open" },
-  { label: "В работе", value: "in_progress" },
-  { label: "Закрыт", value: "closed" },
-];
-
 const form = ref({
   equipment_id: null,
   title: "",
   description: "",
   criticality_id: null,
-  status: null,
+  status_id: null,
   photo_url: "",
   defect_type_id: null,
 });

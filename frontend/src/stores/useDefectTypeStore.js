@@ -1,26 +1,15 @@
 import { defineStore } from "pinia";
+import { apiRequest } from "./api";
 
 export const useDefectTypeStore = defineStore("defectTypes", {
   state: () => ({
-    defectTypes: []
+    defectTypes: [],
   }),
 
   actions: {
     async fetchDefectTypes() {
-      try {
-        const res = await fetch("http://localhost:8000/defect-types", {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("access_token")}`,
-          },
-        });
-        if (res.status === 401) {
-          localStorage.removeItem("access_token");
-          router.push("/login");
-        }
-        this.defectTypes = await res.json();
-      } catch {
-        console.log('defectTypes fetch error');
-      }
-    }
+      const res = await apiRequest("/defect-types");
+      if (res) this.defectTypes = await res.json();
+    },
   },
 });

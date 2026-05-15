@@ -7,49 +7,48 @@
           icon="add"
           color="positive"
           @click="isAddEquipmentVisible = !isAddEquipmentVisible"
-        ></q-btn>
-
-        <q-btn
-          size="sm"
-          icon="edit"
-          color="primary"
-          @click="updateEquipment"
-        ></q-btn>
-
-        <q-btn
-          size="sm"
-          icon="delete"
-          color="negative"
-          @click="delEquipment"
-        ></q-btn>
-      </div>
-
-      <div>
-        <q-table
-          flat
-          bordered
-          title="Приборы"
-          dense
-          selection="single"
-          v-model:selected="selectedRows"
-          :rows="store.items"
-          :columns="columns"
-          :loading="store.loading"
-          row-key="id"
-          @row-click="onRowClick"
-          style="max-height: 550px; overflow-y: auto"
         />
+        <q-btn size="sm" icon="edit" color="primary" @click="updateEquipment" />
+        <q-btn size="sm" icon="delete" color="negative" @click="delEquipment" />
       </div>
+
+      <q-table
+        flat
+        bordered
+        title="Приборы"
+        dense
+        selection="single"
+        v-model:selected="selectedRows"
+        :rows="store.items"
+        :columns="columns"
+        :loading="store.loading"
+        row-key="id"
+        @row-click="onRowClick"
+        style="max-height: 550px; overflow-y: auto"
+      >
+        <!-- имя статуса вместо id -->
+        <template #body-cell-status_id="props">
+          <q-td :props="props">{{ statusName(props.row.status_id) }}</q-td>
+        </template>
+        <!-- имя производителя вместо id -->
+        <template #body-cell-manufacturer_id="props">
+          <q-td :props="props">{{
+            manufacturerName(props.row.manufacturer_id)
+          }}</q-td>
+        </template>
+      </q-table>
     </div>
 
     <div class="q-px-md" style="width: 500px" v-if="selectedEquipment">
       <h3 class="text-black" style="font-size: 20px">
-        {{ selectedEquipment.serial_number }}
-        {{ selectedEquipment.model }}
-        {{ selectedEquipment.status === "active" ? "🟢" : "🔴" }}
+        {{ selectedEquipment.serial_number }} {{ selectedEquipment.model }}
+        {{ selectedEquipment.status_id === activeStatusId ? "🟢" : "🔴" }}
       </h3>
       <p>Дата установки: {{ selectedEquipment.installation_date }}</p>
-      <p>Производитель: {{ selectedEquipment.manufacturer }}</p>
+      <p>
+        Производитель: {{ manufacturerName(selectedEquipment.manufacturer_id) }}
+      </p>
+      <p>Статус: {{ statusName(selectedEquipment.status_id) }}</p>
 
       <div v-if="equipmentDefects && equipmentDefects.length">
         <div v-for="defect in equipmentDefects" :key="defect.id">
@@ -67,10 +66,11 @@
           {
             coords: [selectedEquipment.latitude, selectedEquipment.longitude],
             name: selectedEquipment.model,
-            color: selectedEquipment.status === 'active' ? 'green' : 'red',
+            color:
+              selectedEquipment.status_id === activeStatusId ? 'green' : 'red',
           },
         ]"
-      ></yandex-map>
+      />
     </div>
 
     <q-dialog v-model="isAddEquipmentVisible">
@@ -87,120 +87,76 @@
 </template>
 
 <script setup>
+import { computed, onMounted, ref } from "vue";
 import YandexMap from "src/components/YandexMap.vue";
 import AddEquipment from "src/components/AddEquipment.vue";
 import UpdateEquipment from "src/components/UpdateEquipment.vue";
 import { useEquipmentStore } from "src/stores/useEquipmentStore";
-import { onMounted, ref } from "vue";
+import { useEquipmentStatusStore } from "src/stores/useEquipmentStatusStore";
+import { useManufacturerStore } from "src/stores/useManufacturerStore";
+import { apiRequest } from "src/stores/api";
 
 const store = useEquipmentStore();
-onMounted(() => store.fetchEquipment());
+const statusStore = useEquipmentStatusStore();
+const manufacturerStore = useManufacturerStore();
+
+onMounted(() => {
+  store.fetchEquipment();
+  if (!statusStore.statuses.length) statusStore.fetchEquipmentStatuses();
+  if (!manufacturerStore.manufacturers.length)
+    manufacturerStore.fetchManufacturers();
+});
+
+// хелперы для отображения имён
+const statusName = (id) =>
+  statusStore.statuses.find((s) => s.id === id)?.name ?? id;
+const manufacturerName = (id) =>
+  manufacturerStore.manufacturers.find((m) => m.id === id)?.name ?? id;
+
+// id статуса "Активен" для иконки 🟢/🔴
+const activeStatusId = computed(
+  () => statusStore.statuses.find((s) => s.name === "Активен")?.id,
+);
 
 const selectedRows = ref([]);
 const selectedEquipment = ref(null);
 const equipmentDefects = ref(null);
-const onRowClick = (event, row, index) => {
+
+const onRowClick = async (event, row) => {
   selectedRows.value = [row];
   selectedEquipment.value = row;
-  fetchDefects(selectedEquipment.value.id);
-};
-
-const fetchDefects = async (id) => {
-  try {
-    const res = await fetch(
-      `http://localhost:8000/defects/?skip=0&equipment_id=${id}`,
-      {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("access_token")}`,
-        },
-      },
-    );
-    if (res.status === 401) {
-      localStorage.removeItem("access_token");
-      router.push("/login");
-    }
-    equipmentDefects.value = await res.json();
-  } catch (error) {
-    console.log("Ошибка! ", error);
-  }
+  equipmentDefects.value = null;
+  const res = await apiRequest(`/defects/?skip=0&equipment_id=${row.id}`);
+  equipmentDefects.value = res ? await res.json() : [];
 };
 
 const isAddEquipmentVisible = ref(false);
 const isUpdateEquipmentVisible = ref(false);
 
 const updateEquipment = () => {
-  if (selectedEquipment.value)
-    isUpdateEquipmentVisible.value = !isUpdateEquipmentVisible.value;
+  if (selectedEquipment.value) isUpdateEquipmentVisible.value = true;
   else alert("Выберите прибор!");
 };
 
 const delEquipment = () => {
-  if (!selectedEquipment.value) alert("Выберите прибор!");
-  else {
-    if (
-      confirm(
-        `Вы уверены, что хотите удалить ${selectedEquipment.value.model}?`,
-      )
-    )
-      store.removeEquipment(selectedEquipment.value);
+  if (!selectedEquipment.value) {
+    alert("Выберите прибор!");
+    return;
   }
+  if (
+    confirm(`Вы уверены, что хотите удалить ${selectedEquipment.value.model}?`)
+  )
+    store.removeEquipment(selectedEquipment.value.id);
 };
 
+// prettier-ignore
 const columns = [
-  {
-    name: "serial_number",
-    align: "center",
-    label: "Серийный номер",
-    field: "serial_number",
-    sortable: true,
-    style:
-      "min-width: 100px; max-width: 100px; word-break: break-word; white-space: normal;",
-  },
-  {
-    name: "model",
-    align: "center",
-    label: "Модель",
-    field: "model",
-    sortable: true,
-    style:
-      "min-width: 100px; max-width: 100px; word-break: break-word; white-space: normal;",
-  },
-  {
-    name: "manufacturer",
-    align: "center",
-    label: "Производитель",
-    field: "manufacturer",
-    sortable: true,
-    style:
-      "min-width: 100px; max-width: 100px; word-break: break-word; white-space: normal;",
-  },
-  {
-    name: "location_address",
-    align: "center",
-    label: "Адрес установки",
-    field: "location_address",
-    sortable: true,
-    style:
-      "min-width: 100px; max-width: 100px; word-break: break-word; white-space: normal;",
-  },
-  {
-    name: "installation_date",
-    align: "center",
-    label: "Дата установки",
-    field: "installation_date",
-    sortable: true,
-    style:
-      "min-width: 100px; max-width: 100px; word-break: break-word; white-space: normal;",
-  },
-  {
-    name: "status",
-    align: "center",
-    label: "Статус",
-    field: "status",
-    sortable: true,
-    style:
-      "min-width: 100px; max-width: 100px; word-break: break-word; white-space: normal;",
-  },
+  { name: "serial_number",   align: "center", label: "Серийный номер",  field: "serial_number",   sortable: true, style: "min-width: 100px; max-width: 100px; word-break: break-word; white-space: normal;" },
+  { name: "model",           align: "center", label: "Модель",          field: "model",           sortable: true, style: "min-width: 100px; max-width: 100px; word-break: break-word; white-space: normal;" },
+  { name: "manufacturer_id", align: "center", label: "Производитель",   field: "manufacturer_id", sortable: true, style: "min-width: 100px; max-width: 100px; word-break: break-word; white-space: normal;" },
+  { name: "location_address",align: "center", label: "Адрес установки", field: "location_address",sortable: true, style: "min-width: 100px; max-width: 100px; word-break: break-word; white-space: normal;" },
+  { name: "installation_date",align:"center", label: "Дата установки",  field: "installation_date",sortable: true,style: "min-width: 100px; max-width: 100px; word-break: break-word; white-space: normal;" },
+  { name: "status_id",       align: "center", label: "Статус",          field: "status_id",       sortable: true, style: "min-width: 100px; max-width: 100px; word-break: break-word; white-space: normal;" },
 ];
 </script>
 

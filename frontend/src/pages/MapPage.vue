@@ -15,21 +15,19 @@
                 icon="add"
                 color="positive"
                 @click="isAddDefectVisible = !isAddDefectVisible"
-              ></q-btn>
-
+              />
               <q-btn
                 size="sm"
                 icon="edit"
                 color="primary"
                 @click="updateDefect"
-              ></q-btn>
-
+              />
               <q-btn
                 size="sm"
                 icon="delete"
                 color="negative"
                 @click="delDefect"
-              ></q-btn>
+              />
             </div>
 
             <q-table
@@ -60,7 +58,7 @@
                 : [55.751574, 37.573856]
             "
             :points="mapPoints"
-          ></YandexMap>
+          />
         </div>
       </template>
     </q-splitter>
@@ -85,132 +83,73 @@
 <script setup>
 import { ref, computed, onMounted } from "vue";
 import YandexMap from "src/components/YandexMap.vue";
-import { useDefectStore } from "src/stores/useDefectStore";
 import AddDefect from "src/components/AddDefect.vue";
 import UpdateDefect from "src/components/UpdateDefect.vue";
+import { useDefectStore } from "src/stores/useDefectStore";
+import { apiRequest } from "src/stores/api";
 
 const mapRef = ref(null);
 const splitterModel = ref(50);
-
-const onSplitterResize = () => {
-  // Сообщаем карте, что размер изменился
-  mapRef.value?.invalidateSize();
-};
+const onSplitterResize = () => mapRef.value?.invalidateSize();
 
 const store = useDefectStore();
-onMounted(() => {
-  store.fetchDefects();
-});
+onMounted(() => store.fetchDefects());
 
 const isAddDefectVisible = ref(false);
 const isUpdateDefectVisible = ref(false);
 const fullDefect = ref(null);
+const selectedRows = ref([]);
+const selectedDefect = ref(null);
+
+const onRowClick = (event, row) => {
+  selectedRows.value = [row];
+  selectedDefect.value = row;
+};
 
 const updateDefect = async () => {
   if (!selectedDefect.value) {
     alert("Выберите дефект!");
     return;
   }
-  // загрузить полный объект с equipment_id, criticality_id и т.д.
-  const res = await fetch(
-    `http://localhost:8000/defects/${selectedDefect.value.id}`,
-    {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem("access_token")}`,
-      },
-    },
-  );
+  const res = await apiRequest(`/defects/${selectedDefect.value.id}`);
   fullDefect.value = await res.json();
   isUpdateDefectVisible.value = true;
 };
 
 const delDefect = () => {
-  if (!selectedDefect.value) alert("Выберите дефект!");
-  else {
-    if (
-      confirm(
-        `Вы уверены, что хотите удалить дефект ${selectedDefect.value.equipment_model} \'${selectedDefect.value.title}\'?`,
-      )
-    )
-      store.removeDefect(selectedDefect.value);
+  if (!selectedDefect.value) {
+    alert("Выберите дефект!");
+    return;
   }
+  if (
+    confirm(
+      `Вы уверены, что хотите удалить дефект ${selectedDefect.value.equipment_model} '${selectedDefect.value.title}'?`,
+    )
+  )
+    store.removeDefect(selectedDefect.value.id);
 };
 
-const mapPoints = computed(() => {
-  if (!store.defects || !store.defects.length) return [];
-  return store.defects.map((defect) => ({
-    coords: [defect.latitude, defect.longitude],
-    name: defect.equipment_model,
+const mapPoints = computed(() =>
+  (store.defects ?? []).map((d) => ({
+    coords: [d.latitude, d.longitude],
+    name: d.equipment_model,
     color:
-      defect.criticality === "high"
+      d.criticality === "high"
         ? "red"
-        : defect.criticality === "medium"
+        : d.criticality === "medium"
           ? "yellow"
-          : defect.criticality === "low"
-            ? "green"
-            : "gray",
-  }));
-});
+          : "green",
+  })),
+);
 
-const selectedRows = ref([]);
-const selectedDefect = ref();
-const onRowClick = (event, row, index) => {
-  selectedRows.value = [row];
-  selectedDefect.value = row;
-};
-
+// prettier-ignore
 const columns = [
-  {
-    name: "equipment_serial",
-    align: "center",
-    label: "Серийный номер",
-    field: "equipment_serial",
-    sortable: true,
-    style:
-      "min-width: 85px; max-width: 85px; word-break: break-word; white-space: normal;",
-    headerStyle: "word-break: break-word; white-space: normal;",
-  },
-  {
-    name: "equipment_model",
-    align: "center",
-    label: "Модель",
-    field: "equipment_model",
-    sortable: true,
-    style: "word-break: break-word; white-space: normal;",
-  },
-  {
-    name: "title",
-    align: "center",
-    label: "Наименование",
-    field: "title",
-    sortable: true,
-    style: "word-break: break-word; white-space: normal;",
-  },
-  {
-    name: "description",
-    align: "center",
-    label: "Описание",
-    field: "description",
-    sortable: true,
-    style: "word-break: break-word; white-space: normal;",
-  },
-  {
-    name: "status",
-    align: "center",
-    label: "Статус",
-    field: "status",
-    sortable: true,
-    style: "word-break: break-word; white-space: normal;",
-  },
-
-  {
-    name: "created_at",
-    align: "center",
-    label: "Дата создания",
-    field: "created_at",
-    sortable: true,
-    style: "word-break: break-word; white-space: normal;",
-  },
+  { name: "equipment_serial", align: "center", label: "Серийный номер", field: "equipment_serial", sortable: true, style: "min-width: 85px; max-width: 85px; word-break: break-word; white-space: normal;", headerStyle: "word-break: break-word; white-space: normal;" },
+  { name: "equipment_model",  align: "center", label: "Модель",          field: "equipment_model",  sortable: true, style: "word-break: break-word; white-space: normal;" },
+  { name: "title",            align: "center", label: "Наименование",    field: "title",            sortable: true, style: "word-break: break-word; white-space: normal;" },
+  { name: "description",      align: "center", label: "Описание",        field: "description",      sortable: true, style: "word-break: break-word; white-space: normal;" },
+  { name: "status",           align: "center", label: "Статус",          field: "status",           sortable: true, style: "word-break: break-word; white-space: normal;" },
+  { name: "created_at",       align: "center", label: "Дата создания",   field: "created_at",       sortable: true, style: "word-break: break-word; white-space: normal;" },
 ];
 </script>
 

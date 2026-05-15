@@ -23,12 +23,15 @@
           :rules="[(val) => (val && val.length > 0) || 'Заполните поле']"
         />
 
-        <q-input
+        <q-select
           filled
-          v-model="form.manufacturer"
+          v-model="form.manufacturer_id"
+          :options="manufacturerOptions"
           label="Производитель"
+          emit-value
+          map-options
           lazy-rules
-          :rules="[(val) => (val && val.length > 0) || 'Заполните поле']"
+          :rules="[(val) => !!val || 'Выберите производителя']"
         />
 
         <q-input
@@ -50,7 +53,7 @@
 
         <q-select
           filled
-          v-model="form.status"
+          v-model="form.status_id"
           :options="statusOptions"
           label="Статус"
           emit-value
@@ -69,45 +72,55 @@
 </template>
 
 <script setup>
-import { ref } from "vue";
+import { ref, computed, onMounted } from "vue";
 import { useEquipmentStore } from "src/stores/useEquipmentStore";
+import { useEquipmentStatusStore } from "src/stores/useEquipmentStatusStore";
+import { useManufacturerStore } from "src/stores/useManufacturerStore";
 import { useYandexAddressGeocoder } from "src/composables/useYandexAddressGeocoder";
 
 const { getCoordsByAddress } = useYandexAddressGeocoder();
-
 const emit = defineEmits(["close"]);
-const store = useEquipmentStore();
 
-const statusOptions = [
-  { label: "Активен", value: "active" },
-  { label: "На обслуживании", value: "maintenance" },
-  { label: "Выведен из эксплуатации", value: "decommissioned" },
-];
+const store = useEquipmentStore();
+const statusStore = useEquipmentStatusStore();
+const manufacturerStore = useManufacturerStore();
+
+onMounted(() => {
+  if (!statusStore.statuses.length) statusStore.fetchEquipmentStatuses();
+  if (!manufacturerStore.manufacturers.length) manufacturerStore.fetchManufacturers();
+});
+
+const statusOptions = computed(() =>
+  statusStore.statuses.map((s) => ({ label: s.name, value: s.id }))
+);
+
+const manufacturerOptions = computed(() =>
+  manufacturerStore.manufacturers.map((m) => ({ label: m.name, value: m.id }))
+);
 
 const form = ref({
   serial_number: "",
   model: "",
-  manufacturer: "",
+  manufacturer_id: null,
   location_address: "",
   installation_date: "",
-  status: null,
+  status_id: null,
 });
 
 const onSubmit = async () => {
   const coords = await getCoordsByAddress(form.value.location_address);
   if (!coords) {
-    console.log("address parsing error");
+    console.error("address parsing error");
     return;
   }
-  
+
   await store.addEquipment({
     ...form.value,
     latitude: coords.latitude,
     longitude: coords.longitude,
   });
 
-  alert('Успешно добавлено!');
-
+  alert("Успешно добавлено!");
   emit("close");
 };
 </script>

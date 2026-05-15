@@ -23,12 +23,15 @@
           :rules="[(val) => (val && val.length > 0) || 'Заполните поле']"
         />
 
-        <q-input
+        <q-select
           filled
-          v-model="form.manufacturer"
+          v-model="form.manufacturer_id"
+          :options="manufacturerOptions"
           label="Производитель"
+          emit-value
+          map-options
           lazy-rules
-          :rules="[(val) => (val && val.length > 0) || 'Заполните поле']"
+          :rules="[(val) => !!val || 'Выберите производителя']"
         />
 
         <q-input
@@ -50,7 +53,7 @@
 
         <q-select
           filled
-          v-model="form.status"
+          v-model="form.status_id"
           :options="statusOptions"
           label="Статус"
           emit-value
@@ -69,53 +72,55 @@
 </template>
 
 <script setup>
-import { ref } from "vue";
+import { ref, computed, onMounted } from "vue";
 import { useEquipmentStore } from "src/stores/useEquipmentStore";
+import { useEquipmentStatusStore } from "src/stores/useEquipmentStatusStore";
+import { useManufacturerStore } from "src/stores/useManufacturerStore";
 import { useYandexAddressGeocoder } from "src/composables/useYandexAddressGeocoder";
 
-const props = defineProps({
-  equipment: Object,
-});
+const props = defineProps({ equipment: Object });
+const emit = defineEmits(["close"]);
 
 const { getCoordsByAddress } = useYandexAddressGeocoder();
-
-const emit = defineEmits(["close"]);
 const store = useEquipmentStore();
+const statusStore = useEquipmentStatusStore();
+const manufacturerStore = useManufacturerStore();
 
-const statusOptions = [
-  { label: "Активен", value: "active" },
-  { label: "На обслуживании", value: "maintenance" },
-  { label: "Выведен из эксплуатации", value: "decommissioned" },
-];
+onMounted(() => {
+  if (!statusStore.statuses.length) statusStore.fetchEquipmentStatuses();
+  if (!manufacturerStore.manufacturers.length) manufacturerStore.fetchManufacturers();
+});
 
-// копируем данные дефекта в форму, чтобы не мутировать пропс напрямую
+const statusOptions = computed(() =>
+  statusStore.statuses.map((s) => ({ label: s.name, value: s.id }))
+);
+
+const manufacturerOptions = computed(() =>
+  manufacturerStore.manufacturers.map((m) => ({ label: m.name, value: m.id }))
+);
+
 const form = ref({
-  serial_number: props.equipment?.serial_number,
-  model: props.equipment?.model,
-  manufacturer: props.equipment?.manufacturer,
-  location_address: props.equipment?.location_address,
-  installation_date: props.equipment?.installation_date,
-  status: props.equipment?.status,
+  serial_number: props.equipment?.serial_number ?? "",
+  model: props.equipment?.model ?? "",
+  manufacturer_id: props.equipment?.manufacturer_id ?? null,
+  location_address: props.equipment?.location_address ?? "",
+  installation_date: props.equipment?.installation_date ?? "",
+  status_id: props.equipment?.status_id ?? null,
 });
 
 const onSubmit = async () => {
   const coords = await getCoordsByAddress(form.value.location_address);
   if (!coords) {
-    console.log("address parsing error");
+    console.error("address parsing error");
     return;
   }
 
   await store.updateEquipment(
-    {
-      ...form.value,
-      latitude: coords.latitude,
-      longitude: coords.longitude,
-    },
-    props.equipment.id,
+    { ...form.value, latitude: coords.latitude, longitude: coords.longitude },
+    props.equipment.id
   );
 
   alert("Успешно обновлено!");
-
   emit("close");
 };
 </script>
