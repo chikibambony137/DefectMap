@@ -5,8 +5,9 @@ from sqlalchemy import text
 from core.database import get_db
 from api.routes import (
     auth_router, users_router, roles_router,
-    equipment_router, defects_router,
-    defect_types_router, criticalities_router
+    equipment_router, equipment_statuses_router, defects_router,
+    defect_types_router, defect_statuses_router, criticalities_router,
+    manufacturers_router
 )
 
 app = FastAPI(title="DefectMap API")
@@ -25,9 +26,12 @@ app.include_router(auth_router)
 app.include_router(users_router)
 app.include_router(roles_router)
 app.include_router(equipment_router)
+app.include_router(equipment_statuses_router)
 app.include_router(defects_router)
 app.include_router(defect_types_router)
+app.include_router(defect_statuses_router)
 app.include_router(criticalities_router)
+app.include_router(manufacturers_router)
 
 
 @app.get("/")

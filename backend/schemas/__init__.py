@@ -13,6 +13,16 @@ from .equipment import (
     EquipmentResponse, EquipmentWithStats
 )
 
+# EquipmentStatus
+from .equipment_status import (
+    EquipmentStatusBase, EquipmentStatusCreate, EquipmentStatusResponse
+)
+
+# Manufacturer
+from .manufacturer import (
+    ManufacturerBase, ManufacturerCreate, ManufacturerUpdate, ManufacturerResponse
+)
+
 # Defect
 from .defect import (
     DefectBase, DefectCreate, DefectUpdate,
@@ -22,6 +32,11 @@ from .defect import (
 # DefectType
 from .defect_type import (
     DefectTypeBase, DefectTypeCreate, DefectTypeUpdate, DefectTypeResponse
+)
+
+# DefectStatus
+from .defect_status import (
+    DefectStatusBase, DefectStatusCreate, DefectStatusResponse
 )
 
 # Criticality
@@ -39,11 +54,17 @@ __all__ = [
     # Equipment
     "EquipmentBase", "EquipmentCreate", "EquipmentUpdate",
     "EquipmentResponse", "EquipmentWithStats",
+    # EquipmentStatus
+    "EquipmentStatusBase", "EquipmentStatusCreate", "EquipmentStatusResponse",
+    # Manufacturer
+    "ManufacturerBase", "ManufacturerCreate", "ManufacturerUpdate", "ManufacturerResponse",
     # Defect
     "DefectBase", "DefectCreate", "DefectUpdate",
     "DefectResponse", "DefectWithRelations", "DefectGeoResponse",
     # DefectType
     "DefectTypeBase", "DefectTypeCreate", "DefectTypeUpdate", "DefectTypeResponse",
+    # DefectStatus
+    "DefectStatusBase", "DefectStatusCreate", "DefectStatusResponse",
     # Criticality
     "CriticalityBase", "CriticalityCreate", "CriticalityResponse",
     # Auth

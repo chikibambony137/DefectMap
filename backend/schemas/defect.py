@@ -4,10 +4,9 @@ from pydantic import BaseModel, ConfigDict
 
 
 class DefectBase(BaseModel):
-    """Базовые поля дефекта"""
     title: str
     description: Optional[str] = None
-    status: str = "open"
+    status_id: int = 3          # 3 = "Открыт" по данным из БД
     photo_url: Optional[str] = None
     criticality_id: int
     equipment_id: int
@@ -15,15 +14,13 @@ class DefectBase(BaseModel):
 
 
 class DefectCreate(DefectBase):
-    """Создание дефекта"""
     pass
 
 
 class DefectUpdate(BaseModel):
-    """Обновление дефекта (все поля опциональны)"""
     title: Optional[str] = None
     description: Optional[str] = None
-    status: Optional[str] = None
+    status_id: Optional[int] = None
     photo_url: Optional[str] = None
     resolved_at: Optional[datetime] = None
     criticality_id: Optional[int] = None
@@ -32,7 +29,6 @@ class DefectUpdate(BaseModel):
 
 
 class DefectResponse(DefectBase):
-    """Ответ с дефектом"""
     id: int
     created_at: datetime
     resolved_at: Optional[datetime] = None
@@ -41,10 +37,10 @@ class DefectResponse(DefectBase):
 
 
 class DefectWithRelations(DefectResponse):
-    """Дефект со связанными данными"""
     criticality_name: str
     criticality_weight: int
     defect_type_name: str
+    status_name: str
     equipment_serial: str
     equipment_model: str
     user_surname: str
@@ -53,11 +49,11 @@ class DefectWithRelations(DefectResponse):
 
 
 class DefectGeoResponse(BaseModel):
-    """Дефект для карты (геоданные)"""
     id: int
     title: str
-    criticality: str  # low, medium, high
-    status: str
+    criticality: str
+    status: str                 # человекочитаемое имя статуса
+    status_id: int
     latitude: float
     longitude: float
     equipment_serial: str

@@ -5,10 +5,11 @@ from sqlalchemy.orm import Session
 
 from api.dependencies import get_current_admin_user, get_db, get_current_user, get_current_engineer_user
 from models.defect import Defect
+from models.defect_status import DefectStatus
 from models.equipment import Equipment
 from models.user import User
 from schemas.defect import (
-    DefectCreate, DefectUpdate, DefectResponse, 
+    DefectCreate, DefectUpdate, DefectResponse,
     DefectWithRelations, DefectGeoResponse
 )
 
@@ -19,7 +20,7 @@ router = APIRouter(prefix="/defects", tags=["defects"])
 def get_defects(
     skip: int = 0,
     limit: int = 100,
-    status: Optional[str] = Query(None),
+    status_id: Optional[int] = Query(None),
     criticality_id: Optional[int] = Query(None),
     equipment_id: Optional[int] = Query(None),
     db: Session = Depends(get_db),
@@ -27,14 +28,14 @@ def get_defects(
 ):
     """Получить список дефектов с фильтрацией"""
     query = db.query(Defect)
-    
-    if status:
-        query = query.filter(Defect.status == status)
+
+    if status_id:
+        query = query.filter(Defect.status_id == status_id)
     if criticality_id:
         query = query.filter(Defect.criticality_id == criticality_id)
     if equipment_id:
         query = query.filter(Defect.equipment_id == equipment_id)
-    
+
     return query.order_by(Defect.created_at.desc()).offset(skip).limit(limit).all()
 
 
@@ -48,13 +49,14 @@ def get_defects_for_map(
         Equipment.latitude.isnot(None),
         Equipment.longitude.isnot(None)
     ).all()
-    
+
     return [
         {
             "id": d.id,
             "title": d.title,
             "criticality": d.criticality.name,
-            "status": d.status,
+            "status": d.status.name,        # теперь объект
+            "status_id": d.status_id,
             "latitude": d.equipment.latitude,
             "longitude": d.equipment.longitude,
             "equipment_serial": d.equipment.serial_number,
@@ -76,12 +78,13 @@ def get_defect_by_id(
     defect = db.query(Defect).filter(Defect.id == defect_id).first()
     if not defect:
         raise HTTPException(status_code=404, detail="Дефект не найден")
-    
+
     return {
         **defect.__dict__,
         "criticality_name": defect.criticality.name,
         "criticality_weight": defect.criticality.weight,
         "defect_type_name": defect.defect_type.name,
+        "status_name": defect.status.name,  # добавил
         "equipment_serial": defect.equipment.serial_number,
         "equipment_model": defect.equipment.model,
         "user_surname": defect.user.surname,
@@ -97,11 +100,10 @@ def create_defect(
     current_user: User = Depends(get_current_engineer_user)
 ):
     """Создать дефект"""
-    # Проверяем существование оборудования
     equipment = db.query(Equipment).filter(Equipment.id == defect_data.equipment_id).first()
     if not equipment:
         raise HTTPException(status_code=400, detail="Оборудование не найдено")
-    
+
     defect = Defect(
         **defect_data.model_dump(),
         user_id=current_user.id,
@@ -124,11 +126,11 @@ def update_defect(
     defect = db.query(Defect).filter(Defect.id == defect_id).first()
     if not defect:
         raise HTTPException(status_code=404, detail="Дефект не найден")
-    
+
     update_data = defect_data.model_dump(exclude_unset=True)
     for field, value in update_data.items():
         setattr(defect, field, value)
-    
+
     db.commit()
     db.refresh(defect)
     return defect
@@ -144,6 +146,6 @@ def delete_defect(
     defect = db.query(Defect).filter(Defect.id == defect_id).first()
     if not defect:
         raise HTTPException(status_code=404, detail="Дефект не найден")
-    
+
     db.delete(defect)
     db.commit()

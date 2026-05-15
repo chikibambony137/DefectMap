@@ -20,7 +20,7 @@ class Equipment(Base):
 
     # Связи
     manufacturer = relationship("Manufacturer", back_populates="equipments")
-    equipment_status = relationship("EquipmentStatus", back_populates="equipments")
+    status = relationship("EquipmentStatus", back_populates="equipments")
     defects = relationship("Defect", back_populates="equipment", lazy="dynamic")
 
     def __repr__(self):
