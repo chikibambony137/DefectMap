@@ -2,7 +2,7 @@ from typing import List
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
-from api.dependencies import get_db, get_current_admin_user
+from api.dependencies import get_db, get_current_admin_user, get_current_user
 from models.defect_type import DefectType
 from models.user import User
 from schemas.defect_type import DefectTypeCreate, DefectTypeUpdate, DefectTypeResponse
@@ -13,7 +13,7 @@ router = APIRouter(prefix="/defect-types", tags=["defect_types"])
 @router.get("/", response_model=List[DefectTypeResponse])
 def get_defect_types(
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_admin_user)
+    current_user: User = Depends(get_current_user)
 ):
     """Получить список типов дефектов"""
     return db.query(DefectType).all()

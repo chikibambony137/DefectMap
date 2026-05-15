@@ -149,7 +149,11 @@ const columns = [
   { name: "title",            align: "center", label: "Наименование",    field: "title",            sortable: true, style: "word-break: break-word; white-space: normal;" },
   { name: "description",      align: "center", label: "Описание",        field: "description",      sortable: true, style: "word-break: break-word; white-space: normal;" },
   { name: "status",           align: "center", label: "Статус",          field: "status",           sortable: true, style: "word-break: break-word; white-space: normal;" },
-  { name: "created_at",       align: "center", label: "Дата создания",   field: "created_at",       sortable: true, style: "word-break: break-word; white-space: normal;" },
+  { name: "created_at",       align: "center", label: "Дата создания",   field: (row) => {
+                                                                                const date = new Date(row.created_at);
+                                                                                date.setHours(date.getHours() + 3); // +3 для МСК
+                                                                                return date.toLocaleString();
+                                                                              },                    sortable: true, style: "word-break: break-word; white-space: normal;" },
 ];
 </script>
 

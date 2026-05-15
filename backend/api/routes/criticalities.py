@@ -2,7 +2,7 @@ from typing import List
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
-from api.dependencies import get_db, get_current_admin_user
+from api.dependencies import get_db, get_current_admin_user, get_current_user
 from models.defect_criticality import DefectCriticality
 from models.user import User
 from schemas.criticality import CriticalityCreate, CriticalityResponse
@@ -13,7 +13,7 @@ router = APIRouter(prefix="/criticalities", tags=["criticalities"])
 @router.get("/", response_model=List[CriticalityResponse])
 def get_criticalities(
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_admin_user)
+    current_user: User = Depends(get_current_user)
 ):
     """Получить список критичности"""
     return db.query(DefectCriticality).all()

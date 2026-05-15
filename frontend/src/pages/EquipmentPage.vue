@@ -155,7 +155,7 @@ const columns = [
   { name: "model",           align: "center", label: "Модель",          field: "model",           sortable: true, style: "min-width: 100px; max-width: 100px; word-break: break-word; white-space: normal;" },
   { name: "manufacturer_id", align: "center", label: "Производитель",   field: "manufacturer_id", sortable: true, style: "min-width: 100px; max-width: 100px; word-break: break-word; white-space: normal;" },
   { name: "location_address",align: "center", label: "Адрес установки", field: "location_address",sortable: true, style: "min-width: 100px; max-width: 100px; word-break: break-word; white-space: normal;" },
-  { name: "installation_date",align:"center", label: "Дата установки",  field: "installation_date",sortable: true,style: "min-width: 100px; max-width: 100px; word-break: break-word; white-space: normal;" },
+  { name: "installation_date",align:"center", label: "Дата установки",  field: (row) => new Date(row.installation_date).toLocaleDateString(),sortable: true,style: "min-width: 100px; max-width: 100px; word-break: break-word; white-space: normal;" },
   { name: "status_id",       align: "center", label: "Статус",          field: "status_id",       sortable: true, style: "min-width: 100px; max-width: 100px; word-break: break-word; white-space: normal;" },
 ];
 </script>
