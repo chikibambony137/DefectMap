@@ -70,10 +70,12 @@
           color="primary"
           flat
           class="q-ml-sm"
-          @click="logOut"
+          @click="isLogOut = true"
         />
       </div>
     </q-form>
+
+    <Dialog type="confirm" :visible="isLogOut" @ok="logOut" @cancel="isLogOut = false" title="Вы уверены, что хотите выйти?"></Dialog>
   </div>
 </template>
 
@@ -82,6 +84,7 @@ import { ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import avatarImg from "src/assets/avatar.png";
 import { useUserStore } from "src/stores/useUserStore";
+import Dialog from "src/components/Dialog.vue";
 
 const router = useRouter();
 const userStore = useUserStore();
@@ -131,6 +134,7 @@ const onSubmit = async () => {
   }
 };
 
+const isLogOut = ref(false);
 const logOut = () => {
   localStorage.clear();
   router.push("/login");

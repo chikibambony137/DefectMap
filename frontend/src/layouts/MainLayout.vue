@@ -22,7 +22,12 @@
               </q-item>
               <q-separator />
 
-              <q-item v-if="isUserAdmin" clickable v-close-popup @click="$router.push('/users')">
+              <q-item
+                v-if="isUserAdmin"
+                clickable
+                v-close-popup
+                @click="$router.push('/users')"
+              >
                 <q-item-section>Пользователи</q-item-section>
               </q-item>
             </q-list>
@@ -49,7 +54,7 @@
                   <img :src="avatarImg" />
                 </q-avatar>
 
-                <div class="column" style="gap: 10px;">
+                <div class="column" style="gap: 10px">
                   <div class="text-subtitle1">
                     {{ userData.surname }} {{ userData.name[0] }}.
                     {{ userData.middlename[0] }}.
@@ -70,7 +75,7 @@
                     push
                     size="sm"
                     v-close-popup
-                    @click="logOut"
+                    @click="isLogOut = true"
                   />
                 </div>
               </div>
@@ -83,19 +88,31 @@
     <q-page-container>
       <router-view />
     </q-page-container>
+
+    <Dialog
+      type="confirm"
+      :visible="isLogOut"
+      @ok="logOut"
+      @cancel="isLogOut = false"
+      title="Вы уверены, что хотите выйти?"
+    ></Dialog>
   </q-layout>
 </template>
 
 <script setup>
-import avatarImg from 'src/assets/avatar.png'
-const userData = JSON.parse(localStorage.getItem("user"));
+import { ref } from "vue";
 import { useRouter } from "vue-router";
+import avatarImg from "src/assets/avatar.png";
+import Dialog from "src/components/Dialog.vue";
+
+const userData = JSON.parse(localStorage.getItem("user"));
 
 const router = useRouter();
+const isLogOut = ref(false);
 const logOut = () => {
   localStorage.clear();
   router.push("/login");
 };
 
-const isUserAdmin = JSON.parse(localStorage.getItem('user')).role_id === 1;
+const isUserAdmin = JSON.parse(localStorage.getItem("user")).role_id === 1;
 </script>
