@@ -61,6 +61,7 @@
                     push
                     size="sm"
                     v-close-popup
+                    @click="router.push('/profile')"
                   />
 
                   <q-btn

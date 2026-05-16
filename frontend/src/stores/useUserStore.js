@@ -1,4 +1,5 @@
 import { defineStore } from "pinia";
+import { apiRequest } from "./api";
 
 export const useUserStore = defineStore("users", {
   state: () => ({
@@ -10,30 +11,41 @@ export const useUserStore = defineStore("users", {
     async fetchUsers() {
       this.loading = true;
       try {
-        const res = await fetch("http://localhost:8000/users", {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("access_token")}`,
-          },
-        });
-        if (res.status === 401) {
-          localStorage.removeItem("access_token");
-          router.push("/login");
-        }
-        this.users = await res.json();
+        const res = await apiRequest("/users");
+        if (res) this.users = await res.json();
       } finally {
         this.loading = false;
       }
     },
 
-    async addUser(user) {
-      const res = await fetch("http://localhost:8000/users", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+    async fetchUserById(userId) {
+      this.loading = true;
+      try {
+        const res = await apiRequest(`/users/${userId}`);
+        if (res?.ok) return await res.json();
+        return null;
+      } finally {
+        this.loading = false;
+      }
+    },
+
+    async updateUser(user, userId) {
+      const res = await apiRequest(`/users/${userId}`, {
+        method: "PUT",
         body: JSON.stringify(user),
       });
-      const newUser = await res.json();
-      this.users.push(newUser); // добавить в кэш
+      return res?.ok || false;
     },
-    // ... update, delete
+
+    async addUser(user) {
+      const res = await apiRequest("/users", {
+        method: "POST",
+        body: JSON.stringify(user),
+      });
+      if (res?.ok) {
+        const newUser = await res.json();
+        this.users.push(newUser);
+      }
+    },
   },
 });
