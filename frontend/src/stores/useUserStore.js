@@ -18,6 +18,17 @@ export const useUserStore = defineStore("users", {
       }
     },
 
+    async getMyUser() {
+      this.loading = true;
+      try {
+        const res = await apiRequest(`/auth/me`);
+        if (res?.ok) return await res.json();
+        return null;
+      } finally {
+        this.loading = false;
+      }
+    },
+
     async fetchUserById(userId) {
       this.loading = true;
       try {

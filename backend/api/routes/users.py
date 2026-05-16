@@ -27,7 +27,9 @@ def get_users(
 def get_user(
     user_id: int,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_admin_user)
+    current_user: User = Depends(get_current_user)
+    # временно сделал, что может обычный пользователь, по-хорошему надо новый роут сделать, 
+    # в котором каждый может менять только свои данные
 ):
     """Получить пользователя по ID"""
     user = db.query(User).filter(User.id == user_id).first()
@@ -72,7 +74,9 @@ def update_user(
     user_id: int,
     user_data: UserUpdate,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_admin_user)
+    current_user: User = Depends(get_current_user) 
+    # временно сделал, что может менять обычный пользователь, по-хорошему надо новый роут сделать, 
+    # в котором каждый может менять только свои данные
 ):
     """Обновить пользователя"""
     user = db.query(User).filter(User.id == user_id).first()

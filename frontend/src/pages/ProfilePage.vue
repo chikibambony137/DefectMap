@@ -16,7 +16,7 @@
       </p>
     </div>
 
-    <q-form @submit="onSubmit" class="q-gutter-xs">
+    <q-form class="q-gutter-xs">
       <div class="row q-gutter-x-lg">
         <div style="min-width: 250px">
           <q-input
@@ -64,18 +64,25 @@
       </div>
 
       <div class="row justify-end q-my-md">
-        <q-btn label="Изменить данные" type="submit" color="primary" />
+        <q-btn label="Изменить данные" @click="confirmChange" color="primary" />
         <q-btn
           label="Выход"
           color="primary"
           flat
           class="q-ml-sm"
-          @click="isLogOut = true"
+          @click="confirmExit"
         />
       </div>
     </q-form>
 
-    <Dialog type="confirm" :visible="isLogOut" @ok="logOut" @cancel="isLogOut = false" title="Вы уверены, что хотите выйти?"></Dialog>
+    <Dialog
+      @hide="isVisible = false"
+      :type="dialogType"
+      :visible="isVisible"
+      @ok="okFunc"
+      @cancel="cancelFunc"
+      :title="title"
+    ></Dialog>
   </div>
 </template>
 
@@ -100,17 +107,50 @@ const currentUser = ref({
 const newPassword = ref("");
 
 onMounted(async () => {
-  const userData = JSON.parse(localStorage.getItem("user"));
-  const userId = userData?.id;
-  if (userId) {
-    const user = await userStore.fetchUserById(userId);
-    if (user) {
-      currentUser.value = user;
-    }
+  const user = await userStore.getMyUser();
+  if (user) {
+    currentUser.value = user;
   }
 });
 
-const onSubmit = async () => {
+const dialogType = ref("");
+const okFunc = ref(null);
+const cancelFunc = ref(null);
+const title = ref("Dialog");
+const isVisible = ref(false);
+
+const confirmChange = () => {
+  dialogType.value = "confirm";
+  okFunc.value = submit;
+  cancelFunc.value = () => {
+    isVisible.value = false;
+  };
+  title.value = "Вы уверены, что хотите изменить текущие данные?";
+  isVisible.value = true;
+};
+
+const confirmExit = () => {
+  dialogType.value = "confirm";
+  okFunc.value = logOut;
+  cancelFunc.value = () => {
+    isVisible.value = false;
+  };
+  title.value = "Вы уверены, что хотите выйти?";
+  isVisible.value = true;
+};
+
+const successChange = () => {
+  dialogType.value = "alert";
+  okFunc.value = () => {
+    isVisible.value = false;
+  };
+  title.value = "Данные успешно обновлены!";
+  isVisible.value = true;
+};
+
+const submit = async () => {
+  isVisible.value = false;
+
   const updateData = {
     surname: currentUser.value.surname,
     name: currentUser.value.name,
@@ -125,17 +165,18 @@ const onSubmit = async () => {
 
   const success = await userStore.updateUser(updateData, currentUser.value.id);
   if (success) {
-    alert("Данные обновлены");
     // Обновляем localStorage
     const updatedUser = await userStore.fetchUserById(currentUser.value.id);
-    localStorage.setItem("user", JSON.stringify(updatedUser));
+    if (updatedUser !== undefined || updatedUser !== null)
+      localStorage.setItem("user", JSON.stringify(updatedUser));
+    successChange();
   } else {
     alert("Ошибка при обновлении");
   }
 };
 
-const isLogOut = ref(false);
 const logOut = () => {
+  isVisible.value = false;
   localStorage.clear();
   router.push("/login");
 };
