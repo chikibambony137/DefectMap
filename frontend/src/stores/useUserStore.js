@@ -40,14 +40,6 @@ export const useUserStore = defineStore("users", {
       }
     },
 
-    async updateUser(user, userId) {
-      const res = await apiRequest(`/users/${userId}`, {
-        method: "PUT",
-        body: JSON.stringify(user),
-      });
-      return res?.ok || false;
-    },
-
     async addUser(user) {
       const res = await apiRequest("/users", {
         method: "POST",
@@ -56,6 +48,23 @@ export const useUserStore = defineStore("users", {
       if (res?.ok) {
         const newUser = await res.json();
         this.users.push(newUser);
+      }
+    },
+
+    async updateUser(user, userId) {
+      const res = await apiRequest(`/users/${userId}`, {
+        method: "PUT",
+        body: JSON.stringify(user),
+      });
+      return res?.ok || false;
+    },
+
+    async deleteUser(userId) {
+      const res = await apiRequest(`/users/${userId}`, {
+        method: "DELETE",
+      });
+      if (res?.ok) {
+        this.fetchUsers();
       }
     },
   },
