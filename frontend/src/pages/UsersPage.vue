@@ -90,11 +90,8 @@
                 filled
                 type="password"
                 v-model="newPassword"
-                label="Пароль"
+                label="Новый пароль"
                 lazy-rules
-                :rules="[
-                  (val) => (val !== null && val !== '') || 'Заполните поле',
-                ]"
               />
             </div>
           </div>
