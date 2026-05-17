@@ -35,8 +35,9 @@ def get_equipment(
         if manufacturer_id:
             query = query.filter(Equipment.manufacturer_id == manufacturer_id)
         return query.offset(skip).limit(limit).all()
-    
-    return redis_client.get_or_set(f"equipment:list:{skip}:{limit}", 60, fetch_equipment)
+
+    cache_key = f"equipment:list:{skip}:{limit}:{status_id}:{manufacturer_id}"
+    return redis_client.get_or_set(cache_key, 60, fetch_equipment)
 
 
 @router.get("/with-stats", response_model=List[EquipmentWithStats])
@@ -45,25 +46,29 @@ def get_equipment_with_stats(
     current_user: User = Depends(get_current_user)
 ):
     """Оборудование со статистикой дефектов"""
-    # ID статуса "Открыт" из таблицы defect_status
-    open_status = db.query(DefectStatus).filter(DefectStatus.name == "Открыт").first()
-    open_status_id = open_status.id if open_status else None
 
-    equipment_list = db.query(Equipment).all()
-    result = []
-    for eq in equipment_list:
-        defects_count = db.query(Defect).filter(Defect.equipment_id == eq.id).count()
-        open_defects = db.query(Defect).filter(
-            Defect.equipment_id == eq.id,
-            Defect.status_id == open_status_id
-        ).count() if open_status_id else 0
+    def fetch_equipment_with_stats():
+        print("--------------DATA FROM DB---------------")
+        open_status = db.query(DefectStatus).filter(DefectStatus.name == "Открыт").first()
+        open_status_id = open_status.id if open_status else None
 
-        result.append({
-            **eq.__dict__,
-            "defects_count": defects_count,
-            "open_defects_count": open_defects
-        })
-    return result
+        equipment_list = db.query(Equipment).all()
+        result = []
+        for eq in equipment_list:
+            defects_count = db.query(Defect).filter(Defect.equipment_id == eq.id).count()
+            open_defects = db.query(Defect).filter(
+                Defect.equipment_id == eq.id,
+                Defect.status_id == open_status_id
+            ).count() if open_status_id else 0
+
+            result.append({
+                **eq.__dict__,
+                "defects_count": defects_count,
+                "open_defects_count": open_defects
+            })
+        return result
+
+    return redis_client.get_or_set("equipment:with-stats", 60, fetch_equipment_with_stats)
 
 
 @router.get("/{equipment_id}", response_model=EquipmentResponse)
@@ -73,10 +78,15 @@ def get_equipment_by_id(
     current_user: User = Depends(get_current_user)
 ):
     """Получить оборудование по ID"""
-    equipment = db.query(Equipment).filter(Equipment.id == equipment_id).first()
-    if not equipment:
-        raise HTTPException(status_code=404, detail="Оборудование не найдено")
-    return equipment
+
+    def fetch_equipment():
+        print("--------------DATA FROM DB---------------")
+        equipment = db.query(Equipment).filter(Equipment.id == equipment_id).first()
+        if not equipment:
+            raise HTTPException(status_code=404, detail="Оборудование не найдено")
+        return equipment
+
+    return redis_client.get_or_set(f"equipment:{equipment_id}", 60, fetch_equipment)
 
 
 @router.post("/", response_model=EquipmentResponse, status_code=201)
@@ -96,6 +106,10 @@ def create_equipment(
     db.add(equipment)
     db.commit()
     db.refresh(equipment)
+
+    redis_client.delete_pattern("equipment:list:*")
+    redis_client.delete("equipment:with-stats")
+
     return equipment
 
 
@@ -117,6 +131,11 @@ def update_equipment(
 
     db.commit()
     db.refresh(equipment)
+
+    redis_client.delete(f"equipment:{equipment_id}")
+    redis_client.delete_pattern("equipment:list:*")
+    redis_client.delete("equipment:with-stats")
+
     return equipment
 
 
@@ -137,3 +156,7 @@ def delete_equipment(
 
     db.delete(equipment)
     db.commit()
+
+    redis_client.delete(f"equipment:{equipment_id}")
+    redis_client.delete_pattern("equipment:list:*")
+    redis_client.delete("equipment:with-stats")

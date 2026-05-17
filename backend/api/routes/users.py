@@ -24,9 +24,8 @@ def get_users(
 
     def fetch_users():
         print("----------DATA FROM DB-------------")
-        users = db.query(User).offset(skip).limit(limit).all()
-        return users
-    
+        return db.query(User).offset(skip).limit(limit).all()
+
     return redis_client.get_or_set(f"users:list:{skip}:{limit}", 60, fetch_users)
 
 
@@ -35,14 +34,17 @@ def get_user(
     user_id: int,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
-    # временно сделал, что может обычный пользователь, по-хорошему надо новый роут сделать, 
-    # в котором каждый может менять только свои данные
 ):
     """Получить пользователя по ID"""
-    user = db.query(User).filter(User.id == user_id).first()
-    if not user:
-        raise HTTPException(status_code=404, detail="Пользователь не найден")
-    return user
+
+    def fetch_user():
+        print("----------DATA FROM DB-------------")
+        user = db.query(User).filter(User.id == user_id).first()
+        if not user:
+            raise HTTPException(status_code=404, detail="Пользователь не найден")
+        return user
+
+    return redis_client.get_or_set(f"users:{user_id}", 60, fetch_user)
 
 
 @router.post("/", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
@@ -52,16 +54,14 @@ def create_user(
     current_user: User = Depends(get_current_admin_user)
 ):
     """Создать пользователя (только админ)"""
-    # Проверяем уникальность логина
     existing = db.query(User).filter(User.login == user_data.login).first()
     if existing:
         raise HTTPException(status_code=400, detail="Логин уже существует")
-    
-    # Проверяем существование роли
+
     role = db.query(Role).filter(Role.id == user_data.role_id).first()
     if not role:
         raise HTTPException(status_code=400, detail="Роль не найдена")
-    
+
     new_user = User(
         surname=user_data.surname,
         name=user_data.name,
@@ -73,6 +73,10 @@ def create_user(
     db.add(new_user)
     db.commit()
     db.refresh(new_user)
+
+    # Инвалидируем список после создания
+    redis_client.delete_pattern("users:list:*")
+
     return new_user
 
 
@@ -81,25 +85,28 @@ def update_user(
     user_id: int,
     user_data: UserUpdate,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user) 
-    # временно сделал, что может менять обычный пользователь, по-хорошему надо новый роут сделать, 
-    # в котором каждый может менять только свои данные
+    current_user: User = Depends(get_current_user)
 ):
     """Обновить пользователя"""
     user = db.query(User).filter(User.id == user_id).first()
     if not user:
         raise HTTPException(status_code=404, detail="Пользователь не найден")
-    
+
     update_data = user_data.model_dump(exclude_unset=True)
-    
+
     if "password" in update_data and update_data["password"]:
         update_data["hashed_password"] = get_password_hash(update_data.pop("password"))
-    
+
     for field, value in update_data.items():
         setattr(user, field, value)
-    
+
     db.commit()
     db.refresh(user)
+
+    # Инвалидируем кэш конкретного пользователя и список
+    redis_client.delete(f"users:{user_id}")
+    redis_client.delete_pattern("users:list:*")
+
     return user
 
 
@@ -113,10 +120,13 @@ def delete_user(
     user = db.query(User).filter(User.id == user_id).first()
     if not user:
         raise HTTPException(status_code=404, detail="Пользователь не найден")
-    
+
     if user.id == current_user.id:
         raise HTTPException(status_code=400, detail="Нельзя удалить самого себя")
-    
+
     db.delete(user)
     db.commit()
-    return user
+
+    # Инвалидируем кэш удалённого пользователя и список
+    redis_client.delete(f"users:{user_id}")
+    redis_client.delete_pattern("users:list:*")

@@ -32,17 +32,16 @@ def get_defects(
     def fetch_defects():
         print("----------DATA FROM DB-------------")
         query = db.query(Defect)
-
         if status_id:
             query = query.filter(Defect.status_id == status_id)
         if criticality_id:
             query = query.filter(Defect.criticality_id == criticality_id)
         if equipment_id:
             query = query.filter(Defect.equipment_id == equipment_id)
-
         return query.order_by(Defect.created_at.desc()).offset(skip).limit(limit).all()
-    
-    return redis_client.get_or_set(f"defects:list:{skip}:{limit}", 60, fetch_defects)
+
+    cache_key = f"defects:list:{skip}:{limit}:{status_id}:{criticality_id}:{equipment_id}"
+    return redis_client.get_or_set(cache_key, 60, fetch_defects)
 
 
 @router.get("/geo", response_model=List[DefectGeoResponse])
@@ -58,13 +57,12 @@ def get_defects_for_map(
             Equipment.latitude.isnot(None),
             Equipment.longitude.isnot(None)
         ).all()
-
         return [
             {
                 "id": d.id,
                 "title": d.title,
                 "criticality": d.criticality.name,
-                "status": d.status.name,        # теперь объект
+                "status": d.status.name,
                 "status_id": d.status_id,
                 "latitude": d.equipment.latitude,
                 "longitude": d.equipment.longitude,
@@ -75,8 +73,8 @@ def get_defects_for_map(
             }
             for d in defects
         ]
-    
-    return redis_client.get_or_set(f"defects_for_map:list", 60, fetch_defects_for_map)
+
+    return redis_client.get_or_set("defects:geo:list", 60, fetch_defects_for_map)
 
 
 @router.get("/{defect_id}", response_model=DefectWithRelations)
@@ -86,22 +84,26 @@ def get_defect_by_id(
     current_user: User = Depends(get_current_user)
 ):
     """Получить дефект по ID со всеми связями"""
-    defect = db.query(Defect).filter(Defect.id == defect_id).first()
-    if not defect:
-        raise HTTPException(status_code=404, detail="Дефект не найден")
 
-    return {
-        **defect.__dict__,
-        "criticality_name": defect.criticality.name,
-        "criticality_weight": defect.criticality.weight,
-        "defect_type_name": defect.defect_type.name,
-        "status_name": defect.status.name,  # добавил
-        "equipment_serial": defect.equipment.serial_number,
-        "equipment_model": defect.equipment.model,
-        "user_surname": defect.user.surname,
-        "user_name": defect.user.name,
-        "user_login": defect.user.login
-    }
+    def fetch_defect():
+        print("----------DATA FROM DB-------------")
+        defect = db.query(Defect).filter(Defect.id == defect_id).first()
+        if not defect:
+            raise HTTPException(status_code=404, detail="Дефект не найден")
+        return {
+            **defect.__dict__,
+            "criticality_name": defect.criticality.name,
+            "criticality_weight": defect.criticality.weight,
+            "defect_type_name": defect.defect_type.name,
+            "status_name": defect.status.name,
+            "equipment_serial": defect.equipment.serial_number,
+            "equipment_model": defect.equipment.model,
+            "user_surname": defect.user.surname,
+            "user_name": defect.user.name,
+            "user_login": defect.user.login
+        }
+
+    return redis_client.get_or_set(f"defects:{defect_id}", 60, fetch_defect)
 
 
 @router.post("/", response_model=DefectResponse, status_code=201)
@@ -123,6 +125,10 @@ def create_defect(
     db.add(defect)
     db.commit()
     db.refresh(defect)
+
+    redis_client.delete_pattern("defects:list:*")
+    redis_client.delete("defects:geo:list")
+
     return defect
 
 
@@ -144,6 +150,11 @@ def update_defect(
 
     db.commit()
     db.refresh(defect)
+
+    redis_client.delete(f"defects:{defect_id}")
+    redis_client.delete_pattern("defects:list:*")
+    redis_client.delete("defects:geo:list")
+
     return defect
 
 
@@ -160,3 +171,7 @@ def delete_defect(
 
     db.delete(defect)
     db.commit()
+
+    redis_client.delete(f"defects:{defect_id}")
+    redis_client.delete_pattern("defects:list:*")
+    redis_client.delete("defects:geo:list")

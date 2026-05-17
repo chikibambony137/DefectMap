@@ -4,7 +4,15 @@ from datetime import date, datetime
 from decimal import Decimal
 from core.config import settings
 
-redis_client = redis.Redis.from_url(settings.REDIS_URL, decode_responses=True)
+try:
+    _client = redis.Redis.from_url(settings.REDIS_URL, decode_responses=True, socket_connect_timeout=2)
+    _client.ping()
+    REDIS_AVAILABLE = True
+    print("✅ Redis connected")
+except Exception:
+    _client = None
+    REDIS_AVAILABLE = False
+    print("⚠️  Redis unavailable, caching disabled")
 
 
 class CustomEncoder(json.JSONEncoder):
@@ -19,8 +27,10 @@ class CustomEncoder(json.JSONEncoder):
 
 
 def get(key: str):
+    if not REDIS_AVAILABLE:
+        return None
     try:
-        cached = redis_client.get(key)
+        cached = _client.get(key)
         if cached:
             print("DATA FROM REDIS")
             return json.loads(cached)
@@ -30,8 +40,10 @@ def get(key: str):
 
 
 def setex(key: str, ttl: int, data):
+    if not REDIS_AVAILABLE:
+        return data
     try:
-        redis_client.setex(key, ttl, json.dumps(data, cls=CustomEncoder))
+        _client.setex(key, ttl, json.dumps(data, cls=CustomEncoder))
     except redis.RedisError as e:
         print(f"Redis error in setex: {e}")
     return data
@@ -39,6 +51,9 @@ def setex(key: str, ttl: int, data):
 
 def get_or_set(key: str, ttl: int, compute_func):
     """Получить из кэша, если нет — вычислить и сохранить"""
+    if not REDIS_AVAILABLE:
+        return compute_func()
+
     cached = get(key)
     if cached is not None:
         return cached
@@ -50,17 +65,21 @@ def get_or_set(key: str, ttl: int, compute_func):
 
 def delete(key: str):
     """Удалить ключ из кэша"""
+    if not REDIS_AVAILABLE:
+        return
     try:
-        redis_client.delete(key)
+        _client.delete(key)
     except redis.RedisError as e:
         print(f"Redis error in delete: {e}")
 
 
 def delete_pattern(pattern: str):
     """Удалить все ключи по шаблону (например, 'users:list:*')"""
+    if not REDIS_AVAILABLE:
+        return
     try:
-        keys = redis_client.keys(pattern)
+        keys = _client.keys(pattern)
         if keys:
-            redis_client.delete(*keys)
+            _client.delete(*keys)
     except redis.RedisError as e:
         print(f"Redis error in delete_pattern: {e}")
