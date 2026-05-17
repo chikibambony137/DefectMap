@@ -2,6 +2,7 @@ from typing import List, Optional
 from datetime import datetime
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
+from core import redis_client
 
 from api.dependencies import get_current_admin_user, get_db, get_current_user, get_current_engineer_user
 from models.defect import Defect
@@ -27,16 +28,21 @@ def get_defects(
     current_user: User = Depends(get_current_user)
 ):
     """Получить список дефектов с фильтрацией"""
-    query = db.query(Defect)
 
-    if status_id:
-        query = query.filter(Defect.status_id == status_id)
-    if criticality_id:
-        query = query.filter(Defect.criticality_id == criticality_id)
-    if equipment_id:
-        query = query.filter(Defect.equipment_id == equipment_id)
+    def fetch_defects():
+        print("----------DATA FROM DB-------------")
+        query = db.query(Defect)
 
-    return query.order_by(Defect.created_at.desc()).offset(skip).limit(limit).all()
+        if status_id:
+            query = query.filter(Defect.status_id == status_id)
+        if criticality_id:
+            query = query.filter(Defect.criticality_id == criticality_id)
+        if equipment_id:
+            query = query.filter(Defect.equipment_id == equipment_id)
+
+        return query.order_by(Defect.created_at.desc()).offset(skip).limit(limit).all()
+    
+    return redis_client.get_or_set(f"defects:list:{skip}:{limit}", 60, fetch_defects)
 
 
 @router.get("/geo", response_model=List[DefectGeoResponse])
@@ -45,27 +51,32 @@ def get_defects_for_map(
     current_user: User = Depends(get_current_user)
 ):
     """Дефекты с координатами для карты"""
-    defects = db.query(Defect).join(Defect.equipment).filter(
-        Equipment.latitude.isnot(None),
-        Equipment.longitude.isnot(None)
-    ).all()
 
-    return [
-        {
-            "id": d.id,
-            "title": d.title,
-            "criticality": d.criticality.name,
-            "status": d.status.name,        # теперь объект
-            "status_id": d.status_id,
-            "latitude": d.equipment.latitude,
-            "longitude": d.equipment.longitude,
-            "equipment_serial": d.equipment.serial_number,
-            "equipment_model": d.equipment.model,
-            "description": d.description,
-            "created_at": d.created_at
-        }
-        for d in defects
-    ]
+    def fetch_defects_for_map():
+        print("----------DATA FROM DB-------------")
+        defects = db.query(Defect).join(Defect.equipment).filter(
+            Equipment.latitude.isnot(None),
+            Equipment.longitude.isnot(None)
+        ).all()
+
+        return [
+            {
+                "id": d.id,
+                "title": d.title,
+                "criticality": d.criticality.name,
+                "status": d.status.name,        # теперь объект
+                "status_id": d.status_id,
+                "latitude": d.equipment.latitude,
+                "longitude": d.equipment.longitude,
+                "equipment_serial": d.equipment.serial_number,
+                "equipment_model": d.equipment.model,
+                "description": d.description,
+                "created_at": d.created_at
+            }
+            for d in defects
+        ]
+    
+    return redis_client.get_or_set(f"defects_for_map:list", 60, fetch_defects_for_map)
 
 
 @router.get("/{defect_id}", response_model=DefectWithRelations)

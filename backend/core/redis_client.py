@@ -1,8 +1,21 @@
 import json
 import redis
+from datetime import date, datetime
+from decimal import Decimal
 from core.config import settings
 
 redis_client = redis.Redis.from_url(settings.REDIS_URL, decode_responses=True)
+
+
+class CustomEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, (datetime, date)):
+            return obj.isoformat()
+        if isinstance(obj, Decimal):
+            return float(obj)
+        if hasattr(obj, "__dict__"):
+            return {k: v for k, v in obj.__dict__.items() if not k.startswith("_")}
+        return super().default(obj)
 
 
 def get(key: str):
@@ -18,7 +31,7 @@ def get(key: str):
 
 def setex(key: str, ttl: int, data):
     try:
-        redis_client.setex(key, ttl, json.dumps(data))
+        redis_client.setex(key, ttl, json.dumps(data, cls=CustomEncoder))
     except redis.RedisError as e:
         print(f"Redis error in setex: {e}")
     return data

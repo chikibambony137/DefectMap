@@ -11,6 +11,7 @@ from models.user import User
 from schemas.equipment import (
     EquipmentCreate, EquipmentUpdate, EquipmentResponse, EquipmentWithStats
 )
+from core import redis_client
 
 router = APIRouter(prefix="/equipment", tags=["equipment"])
 
@@ -25,12 +26,17 @@ def get_equipment(
     current_user: User = Depends(get_current_user)
 ):
     """Получить список оборудования"""
-    query = db.query(Equipment)
-    if status_id:
-        query = query.filter(Equipment.status_id == status_id)
-    if manufacturer_id:
-        query = query.filter(Equipment.manufacturer_id == manufacturer_id)
-    return query.offset(skip).limit(limit).all()
+
+    def fetch_equipment():
+        print("--------------DATA FROM DB---------------")
+        query = db.query(Equipment)
+        if status_id:
+            query = query.filter(Equipment.status_id == status_id)
+        if manufacturer_id:
+            query = query.filter(Equipment.manufacturer_id == manufacturer_id)
+        return query.offset(skip).limit(limit).all()
+    
+    return redis_client.get_or_set(f"equipment:list:{skip}:{limit}", 60, fetch_equipment)
 
 
 @router.get("/with-stats", response_model=List[EquipmentWithStats])

@@ -8,6 +8,8 @@ from models.user import User
 from models.role import Role
 from schemas.user import UserCreate, UserUpdate, UserResponse
 
+from core import redis_client
+
 router = APIRouter(prefix="/users", tags=["users"])
 
 
@@ -19,8 +21,13 @@ def get_users(
     current_user: User = Depends(get_current_admin_user)
 ):
     """Получить список пользователей (только админ)"""
-    users = db.query(User).offset(skip).limit(limit).all()
-    return users
+
+    def fetch_users():
+        print("----------DATA FROM DB-------------")
+        users = db.query(User).offset(skip).limit(limit).all()
+        return users
+    
+    return redis_client.get_or_set(f"users:list:{skip}:{limit}", 60, fetch_users)
 
 
 @router.get("/{user_id}", response_model=UserResponse)

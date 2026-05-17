@@ -11,7 +11,7 @@ load_dotenv()
 class Settings(BaseSettings):
     DATABASE_URL: str = os.getenv("DATABASE_URL", "postgresql://postgres:0053@localhost:5432/Diplom")
 
-    # REDIS_URL: str = os.getenv("REDIS_URL", "redis://localhost:6379/0")
+    REDIS_URL: str = os.getenv("REDIS_URL", "redis://localhost:6379/0")
 
     # JWT
     SECRET_KEY: str = os.getenv("SECRET_KEY", "default-secret-key")

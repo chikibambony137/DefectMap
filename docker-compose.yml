@@ -60,12 +60,12 @@ services:
     #   - ./frontend/dist:/usr/share/nginx/html  # только для разработки (hot reload)
 
   # Redis (кэширование)
-  # redis:
-  #   image: redis:alpine
-  #   container_name: project_redis
-  #   ports:
-  #     - "6379:6379"
-  #   restart: unless-stopped
+  redis:
+    image: redis:alpine
+    container_name: diplom_redis
+    ports:
+      - "6379:6379"
+    restart: unless-stopped
 
 volumes:
   postgres_data:
