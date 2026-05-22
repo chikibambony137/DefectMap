@@ -2,9 +2,13 @@ from typing import List
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
-from api.dependencies import get_db, get_current_user, get_current_admin_user, get_current_engineer_user
+from api.dependencies import (get_db, get_current_user,
+                              get_current_admin_user,
+                              get_current_engineer_user)
 from models.manufacturer import Manufacturer
-from schemas.manufacturer import ManufacturerCreate, ManufacturerUpdate, ManufacturerResponse
+from schemas.manufacturer import (ManufacturerCreate,
+                                  ManufacturerUpdate,
+                                  ManufacturerResponse)
 
 router = APIRouter(prefix="/manufacturers", tags=["manufacturers"])
 
@@ -23,7 +27,8 @@ def get_manufacturer_by_id(
     db: Session = Depends(get_db),
     current_user=Depends(get_current_user)
 ):
-    manufacturer = db.query(Manufacturer).filter(Manufacturer.id == manufacturer_id).first()
+    manufacturer = db.query(Manufacturer).filter(
+        Manufacturer.id == manufacturer_id).first()
     if not manufacturer:
         raise HTTPException(status_code=404, detail="Производитель не найден")
     return manufacturer
@@ -49,9 +54,11 @@ def update_manufacturer(
     db: Session = Depends(get_db),
     current_user=Depends(get_current_engineer_user)
 ):
-    manufacturer = db.query(Manufacturer).filter(Manufacturer.id == manufacturer_id).first()
+    manufacturer = db.query(Manufacturer).filter(
+        Manufacturer.id == manufacturer_id).first()
     if not manufacturer:
-        raise HTTPException(status_code=404, detail="Производитель не найден")
+        raise HTTPException(status_code=404,
+                            detail="Производитель не найден")
 
     for field, value in data.model_dump(exclude_unset=True).items():
         setattr(manufacturer, field, value)
@@ -67,10 +74,14 @@ def delete_manufacturer(
     db: Session = Depends(get_db),
     current_user=Depends(get_current_admin_user)
 ):
-    manufacturer = db.query(Manufacturer).filter(Manufacturer.id == manufacturer_id).first()
+    manufacturer = db.query(Manufacturer).filter(
+        Manufacturer.id == manufacturer_id).first()
     if not manufacturer:
-        raise HTTPException(status_code=404, detail="Производитель не найден")
+        raise HTTPException(status_code=404,
+                            detail="Производитель не найден")
     if manufacturer.equipments:
-        raise HTTPException(status_code=400, detail="Нельзя удалить производителя, за которым закреплено оборудование")
+        raise HTTPException(status_code=400,
+                            detail="Нельзя удалить производителя,"
+                            "за которым закреплено оборудование")
     db.delete(manufacturer)
     db.commit()

@@ -28,8 +28,9 @@ def create_role(
     """Создать роль"""
     existing = db.query(Role).filter(Role.name == role_data.name).first()
     if existing:
-        raise HTTPException(status_code=400, detail="Роль с таким именем уже существует")
-    
+        raise HTTPException(status_code=400,
+                            detail="Роль с таким именем уже существует")
+
     role = Role(name=role_data.name)
     db.add(role)
     db.commit()

@@ -26,10 +26,13 @@ def create_criticality(
     current_user: User = Depends(get_current_admin_user)
 ):
     """Создать уровень критичности"""
-    existing = db.query(DefectCriticality).filter(DefectCriticality.name == crit_data.name).first()
+    existing = db.query(DefectCriticality).filter(
+        DefectCriticality.name == crit_data.name).first()
     if existing:
-        raise HTTPException(status_code=400, detail="Уровень критичности с таким названием уже существует")
-    
+        raise HTTPException(status_code=400,
+                            detail="Уровень критичности с"
+                            "таким названием уже существует")
+
     criticality = DefectCriticality(**crit_data.model_dump())
     db.add(criticality)
     db.commit()

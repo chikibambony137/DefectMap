@@ -9,7 +9,8 @@ load_dotenv()
 
 
 class Settings(BaseSettings):
-    DATABASE_URL: str = os.getenv("DATABASE_URL", "postgresql://postgres:0053@localhost:5432/Diplom")
+    DATABASE_URL: str = os.getenv("DATABASE_URL",
+                                  "postgresql://postgres:0053@localhost:5432/Diplom") # noqa
 
     REDIS_URL: str = os.getenv("REDIS_URL", "redis://localhost:6379/0")
 

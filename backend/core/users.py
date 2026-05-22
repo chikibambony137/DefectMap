@@ -67,7 +67,8 @@ class UserManager(IntegerIDMixin, BaseUserManager[User, int]):
     reset_password_token_secret = settings.SECRET_KEY
     verification_token_secret = settings.SECRET_KEY
 
-    async def on_after_register(self, user: User, request: Optional[Request] = None):
+    async def on_after_register(self, user: User,
+                                request: Optional[Request] = None):
         print(f"User {user.id} ({user.email}) has registered.")
 
     async def on_after_forgot_password(

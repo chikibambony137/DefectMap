@@ -3,6 +3,7 @@ from sqlalchemy.orm import relationship
 from datetime import datetime
 from core.database import Base
 
+
 class Defect(Base):
     """Модель дефекта прибора"""
     __tablename__ = "defect"
@@ -18,7 +19,8 @@ class Defect(Base):
     criticality_id = Column(Integer, ForeignKey("defect_criticality.id"))
     equipment_id = Column(Integer, ForeignKey("equipment.id"), nullable=False)
     user_id = Column(Integer, ForeignKey("user.id"), nullable=False)
-    defect_type_id = Column(Integer, ForeignKey("defect_type.id"), nullable=False)
+    defect_type_id = Column(Integer, ForeignKey("defect_type.id"),
+                            nullable=False)
     status_id = Column(Integer, ForeignKey("defect_status.id"), nullable=False)
 
     # Связи

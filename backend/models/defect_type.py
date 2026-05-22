@@ -2,6 +2,7 @@ from sqlalchemy import String, Column, Integer
 from sqlalchemy.orm import relationship
 from core.database import Base
 
+
 class DefectType(Base):
     """Тип дефекта (справочник)"""
     __tablename__ = "defect_type"

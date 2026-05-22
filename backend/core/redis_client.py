@@ -5,7 +5,9 @@ from decimal import Decimal
 from core.config import settings
 
 try:
-    _client = redis.Redis.from_url(settings.REDIS_URL, decode_responses=True, socket_connect_timeout=2)
+    _client = redis.Redis.from_url(settings.REDIS_URL,
+                                   decode_responses=True,
+                                   socket_connect_timeout=2)
     _client.ping()
     REDIS_AVAILABLE = True
     print("✅ Redis connected")
@@ -22,7 +24,8 @@ class CustomEncoder(json.JSONEncoder):
         if isinstance(obj, Decimal):
             return float(obj)
         if hasattr(obj, "__dict__"):
-            return {k: v for k, v in obj.__dict__.items() if not k.startswith("_")}
+            return {k: v for k, v in obj.__dict__.items()
+                    if not k.startswith("_")}
         return super().default(obj)
 
 

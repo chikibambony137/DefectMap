@@ -5,7 +5,9 @@ from sqlalchemy.orm import Session
 from api.dependencies import get_db, get_current_admin_user, get_current_user
 from models.defect_type import DefectType
 from models.user import User
-from schemas.defect_type import DefectTypeCreate, DefectTypeUpdate, DefectTypeResponse
+from schemas.defect_type import (DefectTypeCreate,
+                                 DefectTypeUpdate,
+                                 DefectTypeResponse)
 
 router = APIRouter(prefix="/defect-types", tags=["defect_types"])
 
@@ -26,10 +28,13 @@ def create_defect_type(
     current_user: User = Depends(get_current_admin_user)
 ):
     """Создать тип дефекта"""
-    existing = db.query(DefectType).filter(DefectType.name == type_data.name).first()
+    existing = db.query(DefectType).filter(
+        DefectType.name == type_data.name).first()
     if existing:
-        raise HTTPException(status_code=400, detail="Тип дефекта с таким названием уже существует")
-    
+        raise HTTPException(status_code=400,
+                            detail="Тип дефекта с"
+                            "таким названием уже существует")
+
     defect_type = DefectType(**type_data.model_dump())
     db.add(defect_type)
     db.commit()
@@ -47,12 +52,13 @@ def update_defect_type(
     """Обновить тип дефекта"""
     defect_type = db.query(DefectType).filter(DefectType.id == type_id).first()
     if not defect_type:
-        raise HTTPException(status_code=404, detail="Тип дефекта не найден")
-    
+        raise HTTPException(status_code=404,
+                            detail="Тип дефекта не найден")
+
     update_data = type_data.model_dump(exclude_unset=True)
     for field, value in update_data.items():
         setattr(defect_type, field, value)
-    
+
     db.commit()
     db.refresh(defect_type)
     return defect_type

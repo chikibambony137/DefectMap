@@ -23,9 +23,11 @@ def create_defect_status(
     db: Session = Depends(get_db),
     current_user=Depends(get_current_admin_user)
 ):
-    existing = db.query(DefectStatus).filter(DefectStatus.name == data.name).first()
+    existing = db.query(DefectStatus).filter(
+        DefectStatus.name == data.name).first()
     if existing:
-        raise HTTPException(status_code=400, detail="Статус с таким именем уже существует")
+        raise HTTPException(status_code=400,
+                            detail="Статус с таким именем уже существует")
     status = DefectStatus(**data.model_dump())
     db.add(status)
     db.commit()
@@ -39,10 +41,14 @@ def delete_defect_status(
     db: Session = Depends(get_db),
     current_user=Depends(get_current_admin_user)
 ):
-    status = db.query(DefectStatus).filter(DefectStatus.id == status_id).first()
+    status = db.query(DefectStatus).filter(
+        DefectStatus.id == status_id).first()
     if not status:
-        raise HTTPException(status_code=404, detail="Статус не найден")
+        raise HTTPException(status_code=404,
+                            detail="Статус не найден")
     if status.defects:
-        raise HTTPException(status_code=400, detail="Нельзя удалить статус, к которому привязаны дефекты")
+        raise HTTPException(status_code=400,
+                            detail="Нельзя удалить статус,"
+                            "к которому привязаны дефекты")
     db.delete(status)
     db.commit()

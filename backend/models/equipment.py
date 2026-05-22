@@ -2,6 +2,7 @@ from sqlalchemy import ForeignKey, String, Column, Integer, Float, Date
 from sqlalchemy.orm import relationship
 from core.database import Base
 
+
 class Equipment(Base):
     """Модель оборудования (электротехнические приборы)"""
     __tablename__ = "equipment"
@@ -13,15 +14,18 @@ class Equipment(Base):
     latitude = Column(Float, nullable=True)   # широта (для карты)
     longitude = Column(Float, nullable=True)  # долгота (для карты)
     installation_date = Column(Date, nullable=True)
-    
+
     # Внешние ключи
-    manufacturer_id = Column(Integer, ForeignKey("manufacturer.id"), nullable=False)
-    status_id = Column(Integer, ForeignKey("equipment_status.id"), nullable=False)
+    manufacturer_id = Column(Integer, ForeignKey("manufacturer.id"),
+                             nullable=False)
+    status_id = Column(Integer, ForeignKey("equipment_status.id"),
+                       nullable=False)
 
     # Связи
     manufacturer = relationship("Manufacturer", back_populates="equipments")
     status = relationship("EquipmentStatus", back_populates="equipments")
-    defects = relationship("Defect", back_populates="equipment", lazy="dynamic")
+    defects = relationship("Defect", back_populates="equipment",
+                           lazy="dynamic")
 
     def __repr__(self):
         return f"<Equipment {self.serial_number} ({self.model})>"

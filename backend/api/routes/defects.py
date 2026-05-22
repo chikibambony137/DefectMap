@@ -4,9 +4,11 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 from core import redis_client
 
-from api.dependencies import get_current_admin_user, get_db, get_current_user, get_current_engineer_user
+from api.dependencies import (get_current_admin_user,
+                              get_db,
+                              get_current_user,
+                              get_current_engineer_user)
 from models.defect import Defect
-from models.defect_status import DefectStatus
 from models.equipment import Equipment
 from models.user import User
 from schemas.defect import (
@@ -38,9 +40,11 @@ def get_defects(
             query = query.filter(Defect.criticality_id == criticality_id)
         if equipment_id:
             query = query.filter(Defect.equipment_id == equipment_id)
-        return query.order_by(Defect.created_at.desc()).offset(skip).limit(limit).all()
+        return query.order_by(
+            Defect.created_at.desc()).offset(skip).limit(limit).all()
 
-    cache_key = f"defects:list:{skip}:{limit}:{status_id}:{criticality_id}:{equipment_id}"
+    #
+    cache_key = f"defects:list:{skip}:{limit}:{status_id}:{criticality_id}:{equipment_id}" # noqa
     return redis_client.get_or_set(cache_key, 60, fetch_defects)
 
 
@@ -74,7 +78,8 @@ def get_defects_for_map(
             for d in defects
         ]
 
-    return redis_client.get_or_set("defects:geo:list", 60, fetch_defects_for_map)
+    return redis_client.get_or_set("defects:geo:list",
+                                   60, fetch_defects_for_map)
 
 
 @router.get("/{defect_id}", response_model=DefectWithRelations)
@@ -113,7 +118,8 @@ def create_defect(
     current_user: User = Depends(get_current_engineer_user)
 ):
     """Создать дефект"""
-    equipment = db.query(Equipment).filter(Equipment.id == defect_data.equipment_id).first()
+    equipment = db.query(Equipment).filter(
+        Equipment.id == defect_data.equipment_id).first()
     if not equipment:
         raise HTTPException(status_code=400, detail="Оборудование не найдено")
 

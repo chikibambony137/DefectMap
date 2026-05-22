@@ -4,7 +4,8 @@ from sqlalchemy.orm import Session
 
 from api.dependencies import get_db, get_current_user, get_current_admin_user
 from models.equipment_status import EquipmentStatus
-from schemas.equipment_status import EquipmentStatusCreate, EquipmentStatusResponse
+from schemas.equipment_status import (EquipmentStatusCreate,
+                                      EquipmentStatusResponse)
 
 router = APIRouter(prefix="/equipment-statuses", tags=["equipment-statuses"])
 
@@ -23,9 +24,11 @@ def create_equipment_status(
     db: Session = Depends(get_db),
     current_user=Depends(get_current_admin_user)
 ):
-    existing = db.query(EquipmentStatus).filter(EquipmentStatus.name == data.name).first()
+    existing = db.query(EquipmentStatus).filter(
+        EquipmentStatus.name == data.name).first()
     if existing:
-        raise HTTPException(status_code=400, detail="Статус с таким именем уже существует")
+        raise HTTPException(status_code=400,
+                            detail="Статус с таким именем уже существует")
     status = EquipmentStatus(**data.model_dump())
     db.add(status)
     db.commit()
@@ -39,10 +42,13 @@ def delete_equipment_status(
     db: Session = Depends(get_db),
     current_user=Depends(get_current_admin_user)
 ):
-    status = db.query(EquipmentStatus).filter(EquipmentStatus.id == status_id).first()
+    status = db.query(EquipmentStatus).filter(
+        EquipmentStatus.id == status_id).first()
     if not status:
         raise HTTPException(status_code=404, detail="Статус не найден")
     if status.equipments:
-        raise HTTPException(status_code=400, detail="Нельзя удалить статус, к которому привязано оборудование")
+        raise HTTPException(status_code=400,
+                            detail="Нельзя удалить статус,"
+                            "к которому привязано оборудование")
     db.delete(status)
     db.commit()

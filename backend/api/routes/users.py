@@ -1,8 +1,9 @@
-from typing import List, Optional
-from fastapi import APIRouter, Depends, HTTPException, status, Query
+from typing import List
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
-from api.dependencies import get_db, get_current_user, get_current_admin_user
+from api.dependencies import (get_db, get_current_user,
+                              get_current_admin_user)
 from core.security import get_password_hash
 from models.user import User
 from models.role import Role
@@ -26,7 +27,8 @@ def get_users(
         print("----------DATA FROM DB-------------")
         return db.query(User).offset(skip).limit(limit).all()
 
-    return redis_client.get_or_set(f"users:list:{skip}:{limit}", 60, fetch_users)
+    return redis_client.get_or_set(
+        f"users:list:{skip}:{limit}", 60, fetch_users)
 
 
 @router.get("/{user_id}", response_model=UserResponse)
@@ -41,13 +43,15 @@ def get_user(
         print("----------DATA FROM DB-------------")
         user = db.query(User).filter(User.id == user_id).first()
         if not user:
-            raise HTTPException(status_code=404, detail="Пользователь не найден")
+            raise HTTPException(status_code=404,
+                                detail="Пользователь не найден")
         return user
 
     return redis_client.get_or_set(f"users:{user_id}", 60, fetch_user)
 
 
-@router.post("/", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
+@router.post("/", response_model=UserResponse,
+             status_code=status.HTTP_201_CREATED)
 def create_user(
     user_data: UserCreate,
     db: Session = Depends(get_db),
@@ -95,7 +99,8 @@ def update_user(
     update_data = user_data.model_dump(exclude_unset=True)
 
     if "password" in update_data and update_data["password"]:
-        update_data["hashed_password"] = get_password_hash(update_data.pop("password"))
+        update_data["hashed_password"] = get_password_hash(
+            update_data.pop("password"))
 
     for field, value in update_data.items():
         setattr(user, field, value)
@@ -119,10 +124,12 @@ def delete_user(
     """Удалить пользователя"""
     user = db.query(User).filter(User.id == user_id).first()
     if not user:
-        raise HTTPException(status_code=404, detail="Пользователь не найден")
+        raise HTTPException(status_code=404,
+                            detail="Пользователь не найден")
 
     if user.id == current_user.id:
-        raise HTTPException(status_code=400, detail="Нельзя удалить самого себя")
+        raise HTTPException(status_code=400,
+                            detail="Нельзя удалить самого себя")
 
     db.delete(user)
     db.commit()

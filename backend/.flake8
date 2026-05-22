@@ -1,0 +1,10 @@
+[flake8]
+exclude = 
+    .git,
+    __pycache__,
+    build,
+    dist,
+    __init__.py,
+    venv,
+    alembic.ini,
+    alembic
