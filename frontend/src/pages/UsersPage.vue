@@ -107,14 +107,14 @@
       </div>
     </div>
 
-    <Dialog
+    <CustomDialog
       @hide="isVisible = false"
       :type="dialogType"
       :visible="isVisible"
       @ok="okFunc"
       @cancel="cancelFunc"
       :title="title"
-    ></Dialog>
+    ></CustomDialog>
 
     <q-dialog v-model="isAddUserVisible">
       <AddUser
@@ -133,7 +133,7 @@
 import { useUserStore } from "src/stores/useUserStore";
 import { onMounted, ref } from "vue";
 import avatarImg from "src/assets/avatar.png";
-import Dialog from "src/components/Dialog.vue";
+import CustomDialog from "src/components/CustomDialog.vue";
 import AddUser from "src/components/AddUser.vue";
 
 const userStore = useUserStore();

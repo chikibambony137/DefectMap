@@ -89,13 +89,13 @@
       <router-view />
     </q-page-container>
 
-    <Dialog
+    <CustomDialog
       type="confirm"
       :visible="isLogOut"
       @ok="logOut"
       @cancel="isLogOut = false"
       title="Вы уверены, что хотите выйти?"
-    ></Dialog>
+    ></CustomDialog>
   </q-layout>
 </template>
 
@@ -103,7 +103,7 @@
 import { ref } from "vue";
 import { useRouter } from "vue-router";
 import avatarImg from "src/assets/avatar.png";
-import Dialog from "src/components/Dialog.vue";
+import CustomDialog from "src/components/CustomDialog.vue";
 
 const userData = JSON.parse(localStorage.getItem("user"));
 
