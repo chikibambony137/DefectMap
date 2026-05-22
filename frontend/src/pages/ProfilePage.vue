@@ -75,14 +75,14 @@
       </div>
     </q-form>
 
-    <Dialog
+    <CustomDialog
       @hide="isVisible = false"
       :type="dialogType"
       :visible="isVisible"
       @ok="okFunc"
       @cancel="cancelFunc"
       :title="title"
-    ></Dialog>
+    ></CustomDialog>
   </div>
 </template>
 
@@ -91,7 +91,7 @@ import { ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import avatarImg from "src/assets/avatar.png";
 import { useUserStore } from "src/stores/useUserStore";
-import Dialog from "src/components/Dialog.vue";
+import CustomDialog from "src/components/CustomDialog.vue";
 
 const router = useRouter();
 const userStore = useUserStore();
