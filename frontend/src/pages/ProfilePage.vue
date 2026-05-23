@@ -102,12 +102,12 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue";
-import { useRouter } from "vue-router";
-import { useQuasar } from "quasar";
-import avatarImg from "src/assets/avatar.png";
-import { useUserStore } from "src/stores/useUserStore";
-import CustomDialog from "src/components/CustomDialog.vue";
+import { ref, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
+import { useQuasar } from 'quasar';
+import avatarImg from 'src/assets/avatar.png';
+import { useUserStore } from 'src/stores/useUserStore';
+import CustomDialog from 'src/components/CustomDialog.vue';
 
 const router = useRouter();
 const userStore = useUserStore();
@@ -118,16 +118,16 @@ const isLoading = ref(false);
 const showPassword = ref(false);
 
 const currentUser = ref({
-  surname: "",
-  name: "",
-  middlename: "",
-  login: "",
-  role_id: null,
+  surname: '',
+  name: '',
+  middlename: '',
+  login: '',
+  role_id: null
 });
 
-const newPassword = ref("");
+const newPassword = ref('');
 
-onMounted(async () => {
+onMounted(async() => {
   const user = await userStore.getMyUser();
   if (user) currentUser.value = user;
 });
@@ -137,10 +137,10 @@ const loginRegex = /^[a-zA-Z0-9_]{3,20}$/;
 const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d).{8,}$/;
 
 const nameRules = [
-  (val) => (val && val.trim().length > 0) || "Заполните поле",
-  (val) => cyrillicRegex.test(val?.trim()) || "Только кириллические символы",
-  (val) => val?.trim().length >= 2 || "Минимум 2 символа",
-  (val) => val?.trim().length <= 50 || "Максимум 50 символов",
+  (val) => (val && val.trim().length > 0) || 'Заполните поле',
+  (val) => cyrillicRegex.test(val?.trim()) || 'Только кириллические символы',
+  (val) => val?.trim().length >= 2 || 'Минимум 2 символа',
+  (val) => val?.trim().length <= 50 || 'Максимум 50 символов'
 ];
 
 const middlenameRules = [
@@ -148,62 +148,62 @@ const middlenameRules = [
     !val ||
     val.trim().length === 0 ||
     cyrillicRegex.test(val.trim()) ||
-    "Только кириллические символы",
+    'Только кириллические символы'
 ];
 
 const loginRules = [
-  (val) => (val && val.trim().length > 0) || "Заполните поле",
+  (val) => (val && val.trim().length > 0) || 'Заполните поле',
   (val) =>
-    loginRegex.test(val?.trim()) || "Латиница, цифры и _, от 3 до 20 символов",
+    loginRegex.test(val?.trim()) || 'Латиница, цифры и _, от 3 до 20 символов'
 ];
 
 const newPasswordRules = [
-  (val) => !val || val.length === 0 || val.length >= 8 || "Минимум 8 символов",
+  (val) => !val || val.length === 0 || val.length >= 8 || 'Минимум 8 символов',
   (val) =>
     !val ||
     val.length === 0 ||
     passwordRegex.test(val) ||
-    "Минимум одна буква и одна цифра",
+    'Минимум одна буква и одна цифра'
 ];
 
-const dialogType = ref("");
+const dialogType = ref('');
 const okFunc = ref(null);
 const cancelFunc = ref(null);
-const title = ref("Dialog");
+const title = ref('Dialog');
 const isVisible = ref(false);
 
-const confirmChange = async () => {
+const confirmChange = async() => {
   const valid = await formRef.value?.validate();
   if (!valid) return;
 
-  dialogType.value = "confirm";
+  dialogType.value = 'confirm';
   okFunc.value = submit;
   cancelFunc.value = () => {
     isVisible.value = false;
   };
-  title.value = "Вы уверены, что хотите изменить текущие данные?";
+  title.value = 'Вы уверены, что хотите изменить текущие данные?';
   isVisible.value = true;
 };
 
 const confirmExit = () => {
-  dialogType.value = "confirm";
+  dialogType.value = 'confirm';
   okFunc.value = logOut;
   cancelFunc.value = () => {
     isVisible.value = false;
   };
-  title.value = "Вы уверены, что хотите выйти?";
+  title.value = 'Вы уверены, что хотите выйти?';
   isVisible.value = true;
 };
 
-const submit = async () => {
+const submit = async() => {
   isVisible.value = false;
   isLoading.value = true;
   try {
     const updateData = {
       surname: currentUser.value.surname.trim(),
       name: currentUser.value.name.trim(),
-      middlename: currentUser.value.middlename?.trim() ?? "",
-      login: currentUser.value.login.trim(),
+      middlename: currentUser.value.middlename?.trim() ?? '',
+      login: currentUser.value.login.trim()
     };
 
     if (newPassword.value) {
@@ -212,24 +212,24 @@ const submit = async () => {
 
     const success = await userStore.updateUser(
       updateData,
-      currentUser.value.id,
+      currentUser.value.id
     );
-    if (!success) throw new Error("Ошибка при обновлении");
+    if (!success) throw new Error('Ошибка при обновлении');
 
     const updatedUser = await userStore.fetchUserById(currentUser.value.id);
-    if (updatedUser) localStorage.setItem("user", JSON.stringify(updatedUser));
+    if (updatedUser) localStorage.setItem('user', JSON.stringify(updatedUser));
 
     $q.notify({
-      type: "positive",
-      message: "Данные успешно обновлены",
-      position: "top",
+      type: 'positive',
+      message: 'Данные успешно обновлены',
+      position: 'top'
     });
   } catch (error) {
-    console.error("Ошибка при обновлении профиля:", error);
+    console.error('Ошибка при обновлении профиля:', error);
     $q.notify({
-      type: "negative",
-      message: error.message || "Не удалось обновить данные",
-      position: "top",
+      type: 'negative',
+      message: error.message || 'Не удалось обновить данные',
+      position: 'top'
     });
   } finally {
     isLoading.value = false;
@@ -239,6 +239,6 @@ const submit = async () => {
 const logOut = () => {
   isVisible.value = false;
   localStorage.clear();
-  router.push("/login");
+  router.push('/login');
 };
 </script>

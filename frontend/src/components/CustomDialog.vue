@@ -10,38 +10,47 @@
       </q-card-section>
 
       <q-card-actions align="right" v-if="type === 'alert'">
-        <q-btn flat label="OK" color="primary" @click="onOk" />
+        <q-btn flat
+               label="OK"
+               color="primary"
+               @click="onOk" />
       </q-card-actions>
 
       <q-card-actions align="right" v-if="type === 'confirm'">
-        <q-btn flat label="Отмена" color="primary" @click="onCancel" />
-        <q-btn flat label="OK" color="primary" @click="onOk" />
+        <q-btn flat
+               label="Отмена"
+               color="primary"
+               @click="onCancel" />
+        <q-btn flat
+               label="OK"
+               color="primary"
+               @click="onOk" />
       </q-card-actions>
     </q-card>
   </q-dialog>
 </template>
 
 <script setup>
-import { ref, watch } from "vue";
+import { ref, watch } from 'vue';
 
 const props = defineProps({
   type: {
     type: String,
-    required: true,
+    required: true
   },
   title: {
-    type: String,
+    type: String
   },
   body: {
-    type: String,
+    type: String
   },
   visible: {
     type: Boolean,
-    default: false,
-  },
+    default: false
+  }
 });
 
-const emit = defineEmits(["ok", "cancel", "update:visible"]);
+const emit = defineEmits(['ok', 'cancel', 'update:visible']);
 
 const isVisible = ref(props.visible);
 
@@ -50,16 +59,16 @@ watch(() => props.visible, (val) => {
 });
 
 watch(isVisible, (val) => {
-  emit("update:visible", val);
+  emit('update:visible', val);
 });
 
 const onOk = () => {
   isVisible.value = false;
-  emit("ok");
+  emit('ok');
 };
 
 const onCancel = () => {
   isVisible.value = false;
-  emit("cancel");
+  emit('cancel');
 };
 </script>

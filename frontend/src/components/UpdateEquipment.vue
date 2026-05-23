@@ -2,7 +2,11 @@
   <q-card style="min-width: 450px">
     <q-card-section class="row items-center justify-between q-pb-none">
       <div class="text-h6">Редактировать прибор</div>
-      <q-btn icon="close" flat round dense @click="$emit('close')" />
+      <q-btn icon="close"
+             flat
+             round
+             dense
+             @click="$emit('close')" />
     </q-card-section>
 
     <q-card-section>
@@ -92,15 +96,15 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from "vue";
-import { useQuasar } from "quasar";
-import { useEquipmentStore } from "src/stores/useEquipmentStore";
-import { useEquipmentStatusStore } from "src/stores/useEquipmentStatusStore";
-import { useManufacturerStore } from "src/stores/useManufacturerStore";
-import { useYandexAddressGeocoder } from "src/composables/useYandexAddressGeocoder";
+import { ref, computed, onMounted } from 'vue';
+import { useQuasar } from 'quasar';
+import { useEquipmentStore } from 'src/stores/useEquipmentStore';
+import { useEquipmentStatusStore } from 'src/stores/useEquipmentStatusStore';
+import { useManufacturerStore } from 'src/stores/useManufacturerStore';
+import { useYandexAddressGeocoder } from 'src/composables/useYandexAddressGeocoder';
 
 const props = defineProps({ equipment: Object });
-const emit = defineEmits(["close", "updated"]);
+const emit = defineEmits(['close', 'updated']);
 
 const { getCoordsByAddress } = useYandexAddressGeocoder();
 const $q = useQuasar();
@@ -117,31 +121,31 @@ onMounted(() => {
 });
 
 const statusOptions = computed(() =>
-  statusStore.statuses.map((s) => ({ label: s.name, value: s.id })),
+  statusStore.statuses.map((s) => ({ label: s.name, value: s.id }))
 );
 
 const manufacturerOptions = computed(() =>
-  manufacturerStore.manufacturers.map((m) => ({ label: m.name, value: m.id })),
+  manufacturerStore.manufacturers.map((m) => ({ label: m.name, value: m.id }))
 );
 
 const form = ref({
-  serial_number: props.equipment?.serial_number ?? "",
-  model: props.equipment?.model ?? "",
+  serial_number: props.equipment?.serial_number ?? '',
+  model: props.equipment?.model ?? '',
   manufacturer_id: props.equipment?.manufacturer_id ?? null,
-  location_address: props.equipment?.location_address ?? "",
-  installation_date: props.equipment?.installation_date ?? "",
-  status_id: props.equipment?.status_id ?? null,
+  location_address: props.equipment?.location_address ?? '',
+  installation_date: props.equipment?.installation_date ?? '',
+  status_id: props.equipment?.status_id ?? null
 });
 
-const onSubmit = async () => {
+const onSubmit = async() => {
   isLoading.value = true;
   try {
     const coords = await getCoordsByAddress(form.value.location_address);
     if (!coords) {
       $q.notify({
-        type: "warning",
-        message: "Не удалось определить координаты по указанному адресу",
-        position: "top",
+        type: 'warning',
+        message: 'Не удалось определить координаты по указанному адресу',
+        position: 'top'
       });
       return;
     }
@@ -153,25 +157,25 @@ const onSubmit = async () => {
         model: form.value.model.trim(),
         location_address: form.value.location_address.trim(),
         latitude: coords.latitude,
-        longitude: coords.longitude,
+        longitude: coords.longitude
       },
-      props.equipment.id,
+      props.equipment.id
     );
 
     $q.notify({
-      type: "positive",
-      message: "Прибор успешно обновлён",
-      position: "top",
+      type: 'positive',
+      message: 'Прибор успешно обновлён',
+      position: 'top'
     });
 
-    emit("updated");
-    emit("close");
+    emit('updated');
+    emit('close');
   } catch (error) {
-    console.error("Ошибка при обновлении прибора:", error);
+    console.error('Ошибка при обновлении прибора:', error);
     $q.notify({
-      type: "negative",
-      message: error.message || "Не удалось обновить прибор",
-      position: "top",
+      type: 'negative',
+      message: error.message || 'Не удалось обновить прибор',
+      position: 'top'
     });
   } finally {
     isLoading.value = false;

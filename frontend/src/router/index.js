@@ -1,11 +1,11 @@
-import { defineRouter } from "#q-app/wrappers";
+import { defineRouter } from '#q-app/wrappers';
 import {
   createRouter,
   createMemoryHistory,
   createWebHistory,
-  createWebHashHistory,
-} from "vue-router";
-import routes from "./routes";
+  createWebHashHistory
+} from 'vue-router';
+import routes from './routes';
 
 /*
  * If not building with SSR mode, you can
@@ -19,7 +19,7 @@ import routes from "./routes";
 export default defineRouter((/* { store, ssrContext } */) => {
   const createHistory = process.env.SERVER
     ? createMemoryHistory
-    : process.env.VUE_ROUTER_MODE === "history"
+    : process.env.VUE_ROUTER_MODE === 'history'
       ? createWebHistory
       : createWebHashHistory;
 
@@ -30,16 +30,16 @@ export default defineRouter((/* { store, ssrContext } */) => {
     // Leave this as is and make changes in quasar.conf.js instead!
     // quasar.conf.js -> build -> vueRouterMode
     // quasar.conf.js -> build -> publicPath
-    history: createHistory(process.env.VUE_ROUTER_BASE),
+    history: createHistory(process.env.VUE_ROUTER_BASE)
   });
 
-  Router.beforeEach((to, from) => {
-    const token = localStorage.getItem("access_token");
+  Router.beforeEach((to) => {
+    const token = localStorage.getItem('access_token');
 
     if (to.meta.requiresAuth && !token) {
-      return "/login";
-    } else if (to.path === "/login" && token) {
-      return "/equipment";
+      return '/login';
+    } else if (to.path === '/login' && token) {
+      return '/equipment';
     }
 
     return;

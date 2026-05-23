@@ -54,78 +54,78 @@
 </template>
 
 <script setup>
-import { ref } from "vue";
-import { useRouter } from "vue-router";
-import { useQuasar } from "quasar";
+import { ref } from 'vue';
+import { useRouter } from 'vue-router';
+import { useQuasar } from 'quasar';
 
 const router = useRouter();
 const $q = useQuasar();
 
-const login = ref("");
-const password = ref("");
+const login = ref('');
+const password = ref('');
 const isLoading = ref(false);
 const showPassword = ref(false);
 
-const onSubmit = async () => {
+const onSubmit = async() => {
   isLoading.value = true;
   try {
-    const response = await fetch("http://localhost:8000/auth/login", {
-      method: "POST",
+    const response = await fetch('http://localhost:8000/auth/login', {
+      method: 'POST',
       headers: {
-        "Content-Type": "application/x-www-form-urlencoded",
+        'Content-Type': 'application/x-www-form-urlencoded'
       },
       body: new URLSearchParams({
         username: login.value,
-        password: password.value,
-      }),
+        password: password.value
+      })
     });
 
     const data = await response.json();
 
     if (response.status === 401) {
       $q.notify({
-        type: "negative",
-        message: "Неверный логин или пароль",
-        position: "top",
+        type: 'negative',
+        message: 'Неверный логин или пароль',
+        position: 'top'
       });
       return;
     }
 
     if (!response.ok) {
-      throw new Error(data.detail || "Ошибка авторизации");
+      throw new Error(data.detail || 'Ошибка авторизации');
     }
 
-    localStorage.setItem("access_token", data.access_token);
-    localStorage.setItem("token_type", data.token_type);
+    localStorage.setItem('access_token', data.access_token);
+    localStorage.setItem('token_type', data.token_type);
 
     await fetchUserData();
 
-    router.push("/equipment");
+    router.push('/equipment');
   } catch (error) {
-    console.error("Login error:", error);
+    console.error('Login error:', error);
     $q.notify({
-      type: "negative",
-      message: error.message || "Не удалось выполнить вход",
-      position: "top",
+      type: 'negative',
+      message: error.message || 'Не удалось выполнить вход',
+      position: 'top'
     });
   } finally {
     isLoading.value = false;
   }
 };
 
-const fetchUserData = async () => {
+const fetchUserData = async() => {
   try {
-    const token = localStorage.getItem("access_token");
-    const response = await fetch("http://localhost:8000/auth/me", {
-      headers: { Authorization: `Bearer ${token}` },
+    const token = localStorage.getItem('access_token');
+    const response = await fetch('http://localhost:8000/auth/me', {
+      headers: { Authorization: `Bearer ${token}` }
     });
 
     if (response.ok) {
       const userData = await response.json();
-      localStorage.setItem("user", JSON.stringify(userData));
+      localStorage.setItem('user', JSON.stringify(userData));
     }
   } catch (error) {
-    console.error("Error fetching user data:", error);
+    console.error('Error fetching user data:', error);
   }
 };
 </script>

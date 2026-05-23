@@ -2,7 +2,11 @@
   <q-layout view="lHh Lpr lFf">
     <q-header elevated>
       <q-toolbar class="bg-primary glossy text-white q-px-xl">
-        <q-btn flat round dense icon="menu" class="q-mr-sm">
+        <q-btn flat
+               round
+               dense
+               icon="menu"
+               class="q-mr-sm">
           <q-menu>
             <q-list style="min-width: 200px">
               <q-item>
@@ -100,19 +104,19 @@
 </template>
 
 <script setup>
-import { ref } from "vue";
-import { useRouter } from "vue-router";
-import avatarImg from "src/assets/avatar.png";
-import CustomDialog from "src/components/CustomDialog.vue";
+import { ref } from 'vue';
+import { useRouter } from 'vue-router';
+import avatarImg from 'src/assets/avatar.png';
+import CustomDialog from 'src/components/CustomDialog.vue';
 
-const userData = JSON.parse(localStorage.getItem("user"));
+const userData = JSON.parse(localStorage.getItem('user'));
 
 const router = useRouter();
 const isLogOut = ref(false);
 const logOut = () => {
   localStorage.clear();
-  router.push("/login");
+  router.push('/login');
 };
 
-const isUserAdmin = JSON.parse(localStorage.getItem("user")).role_id === 1;
+const isUserAdmin = JSON.parse(localStorage.getItem('user')).role_id === 1;
 </script>

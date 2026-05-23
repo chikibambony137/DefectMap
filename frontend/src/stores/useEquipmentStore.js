@@ -1,17 +1,17 @@
-import { defineStore } from "pinia";
-import { apiRequest } from "./api";
+import { defineStore } from 'pinia';
+import { apiRequest } from './api';
 
-export const useEquipmentStore = defineStore("equipment", {
+export const useEquipmentStore = defineStore('equipment', {
   state: () => ({
     items: [],
-    loading: false,
+    loading: false
   }),
 
   actions: {
     async fetchEquipment() {
       this.loading = true;
       try {
-        const res = await apiRequest("/equipment");
+        const res = await apiRequest('/equipment');
         if (res) this.items = await res.json();
       } finally {
         this.loading = false;
@@ -19,14 +19,14 @@ export const useEquipmentStore = defineStore("equipment", {
     },
 
     async addEquipment(equipment) {
-      const res = await apiRequest("/equipment", {
-        method: "POST",
-        body: JSON.stringify(equipment),
+      const res = await apiRequest('/equipment', {
+        method: 'POST',
+        body: JSON.stringify(equipment)
       });
 
       if (!res?.ok) {
         const data = await res?.json().catch(() => ({}));
-        throw new Error(data?.detail || "Ошибка при добавлении прибора");
+        throw new Error(data?.detail || 'Ошибка при добавлении прибора');
       }
 
       await this.fetchEquipment();
@@ -34,13 +34,13 @@ export const useEquipmentStore = defineStore("equipment", {
 
     async updateEquipment(equipment, equipmentId) {
       const res = await apiRequest(`/equipment/${equipmentId}`, {
-        method: "PUT",
-        body: JSON.stringify(equipment),
+        method: 'PUT',
+        body: JSON.stringify(equipment)
       });
 
       if (!res?.ok) {
         const data = await res?.json().catch(() => ({}));
-        throw new Error(data?.detail || "Ошибка при обновлении прибора");
+        throw new Error(data?.detail || 'Ошибка при обновлении прибора');
       }
 
       await this.fetchEquipment();
@@ -48,11 +48,11 @@ export const useEquipmentStore = defineStore("equipment", {
 
     async removeEquipment(equipmentId) {
       const res = await apiRequest(`/equipment/${equipmentId}`, {
-        method: "DELETE",
+        method: 'DELETE'
       });
       if (res?.ok) {
         await this.fetchEquipment();
-      } else throw new Error(data?.detail || "Ошибка при удалении прибора");
-    },
-  },
+      } else throw new Error(res.data?.detail || 'Ошибка при удалении прибора');
+    }
+  }
 });

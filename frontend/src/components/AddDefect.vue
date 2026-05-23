@@ -2,7 +2,11 @@
   <q-card style="min-width: 450px">
     <q-card-section class="row items-center justify-between q-pb-none">
       <div class="text-h6">Зарегистрировать дефект</div>
-      <q-btn icon="close" flat round dense @click="$emit('close')" />
+      <q-btn icon="close"
+             flat
+             round
+             dense
+             @click="$emit('close')" />
     </q-card-section>
 
     <q-card-section>
@@ -93,14 +97,14 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from "vue";
-import { useQuasar } from "quasar";
-import { useDefectStore } from "src/stores/useDefectStore";
-import { useEquipmentStore } from "src/stores/useEquipmentStore";
-import { useDefectTypeStore } from "src/stores/useDefectTypeStore";
-import { useDefectStatusStore } from "src/stores/useDefectStatusStore";
+import { ref, computed, onMounted } from 'vue';
+import { useQuasar } from 'quasar';
+import { useDefectStore } from 'src/stores/useDefectStore';
+import { useEquipmentStore } from 'src/stores/useEquipmentStore';
+import { useDefectTypeStore } from 'src/stores/useDefectTypeStore';
+import { useDefectStatusStore } from 'src/stores/useDefectStatusStore';
 
-const emit = defineEmits(["close", "added"]);
+const emit = defineEmits(['close', 'added']);
 const $q = useQuasar();
 const defectStore = useDefectStore();
 const equipmentStore = useEquipmentStore();
@@ -119,63 +123,63 @@ onMounted(() => {
 const equipmentOptions = computed(() =>
   equipmentStore.items.map((eq) => ({
     label: `${eq.serial_number} — ${eq.model}`,
-    value: eq.id,
-  })),
+    value: eq.id
+  }))
 );
 
 const typeOptions = computed(() =>
   defectTypeStore.defectTypes.map((type) => ({
     label: type.description,
-    value: type.id,
-  })),
+    value: type.id
+  }))
 );
 
 const statusOptions = computed(() =>
   defectStatusStore.statuses.map((s) => ({
     label: s.name,
-    value: s.id,
-  })),
+    value: s.id
+  }))
 );
 
 const criticalityOptions = [
-  { label: "Высокая", value: 3 },
-  { label: "Средняя", value: 2 },
-  { label: "Низкая", value: 1 },
+  { label: 'Высокая', value: 3 },
+  { label: 'Средняя', value: 2 },
+  { label: 'Низкая', value: 1 }
 ];
 
 const form = ref({
   equipment_id: null,
-  title: "",
-  description: "",
+  title: '',
+  description: '',
   criticality_id: null,
   status_id: null,
-  photo_url: "",
-  defect_type_id: null,
+  photo_url: '',
+  defect_type_id: null
 });
 
-const onSubmit = async () => {
+const onSubmit = async() => {
   isLoading.value = true;
   try {
     await defectStore.addDefect({
       ...form.value,
       title: form.value.title.trim(),
-      description: form.value.description.trim(),
+      description: form.value.description.trim()
     });
 
     $q.notify({
-      type: "positive",
-      message: "Дефект успешно зарегистрирован",
-      position: "top",
+      type: 'positive',
+      message: 'Дефект успешно зарегистрирован',
+      position: 'top'
     });
 
-    emit("added");
-    emit("close");
+    emit('added');
+    emit('close');
   } catch (error) {
-    console.error("Ошибка при добавлении дефекта:", error);
+    console.error('Ошибка при добавлении дефекта:', error);
     $q.notify({
-      type: "negative",
-      message: error.message || "Не удалось зарегистрировать дефект",
-      position: "top",
+      type: 'negative',
+      message: error.message || 'Не удалось зарегистрировать дефект',
+      position: 'top'
     });
   } finally {
     isLoading.value = false;

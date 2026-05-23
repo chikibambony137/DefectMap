@@ -8,8 +8,14 @@
           color="positive"
           @click="isAddEquipmentVisible = !isAddEquipmentVisible"
         />
-        <q-btn size="sm" icon="edit" color="primary" @click="updateEquipment" />
-        <q-btn size="sm" icon="delete" color="negative" @click="delEquipment" />
+        <q-btn size="sm"
+               icon="edit"
+               color="primary"
+               @click="updateEquipment" />
+        <q-btn size="sm"
+               icon="delete"
+               color="negative"
+               @click="delEquipment" />
       </div>
 
       <q-table
@@ -87,15 +93,15 @@
 </template>
 
 <script setup>
-import { computed, onMounted, ref } from "vue";
-import { useQuasar } from "quasar";
-import YandexMap from "src/components/YandexMap.vue";
-import AddEquipment from "src/components/AddEquipment.vue";
-import UpdateEquipment from "src/components/UpdateEquipment.vue";
-import { useEquipmentStore } from "src/stores/useEquipmentStore";
-import { useEquipmentStatusStore } from "src/stores/useEquipmentStatusStore";
-import { useManufacturerStore } from "src/stores/useManufacturerStore";
-import { apiRequest } from "src/stores/api";
+import { computed, onMounted, ref } from 'vue';
+import { useQuasar } from 'quasar';
+import YandexMap from 'src/components/YandexMap.vue';
+import AddEquipment from 'src/components/AddEquipment.vue';
+import UpdateEquipment from 'src/components/UpdateEquipment.vue';
+import { useEquipmentStore } from 'src/stores/useEquipmentStore';
+import { useEquipmentStatusStore } from 'src/stores/useEquipmentStatusStore';
+import { useManufacturerStore } from 'src/stores/useManufacturerStore';
+import { apiRequest } from 'src/stores/api';
 
 const $q = useQuasar();
 const store = useEquipmentStore();
@@ -115,14 +121,14 @@ const manufacturerName = (id) =>
   manufacturerStore.manufacturers.find((m) => m.id === id)?.name ?? id;
 
 const activeStatusId = computed(
-  () => statusStore.statuses.find((s) => s.name === "Активен")?.id,
+  () => statusStore.statuses.find((s) => s.name === 'Активен')?.id
 );
 
 const selectedRows = ref([]);
 const selectedEquipment = ref(null);
 const equipmentDefects = ref(null);
 
-const onRowClick = async (event, row) => {
+const onRowClick = async(event, row) => {
   selectedRows.value = [row];
   selectedEquipment.value = row;
   equipmentDefects.value = null;
@@ -138,9 +144,9 @@ const updateEquipment = () => {
     isUpdateEquipmentVisible.value = true;
   } else {
     $q.notify({
-      type: "warning",
-      message: "Выберите прибор",
-      position: "top",
+      type: 'warning',
+      message: 'Выберите прибор',
+      position: 'top'
     });
   }
 };
@@ -148,34 +154,34 @@ const updateEquipment = () => {
 const delEquipment = () => {
   if (!selectedEquipment.value) {
     $q.notify({
-      type: "warning",
-      message: "Выберите прибор",
-      position: "top",
+      type: 'warning',
+      message: 'Выберите прибор',
+      position: 'top'
     });
     return;
   }
 
   $q.dialog({
-    title: "Подтверждение",
+    title: 'Подтверждение',
     message: `Вы уверены, что хотите удалить ${selectedEquipment.value.model}?`,
     cancel: true,
-    persistent: true,
-  }).onOk(async () => {
+    persistent: true
+  }).onOk(async() => {
     try {
       await store.removeEquipment(selectedEquipment.value.id);
       selectedEquipment.value = null;
       selectedRows.value = [];
 
       $q.notify({
-        type: "positive",
-        message: "Успешно удалено!",
-        position: "top",
+        type: 'positive',
+        message: 'Успешно удалено!',
+        position: 'top'
       });
     } catch (error) {
       $q.notify({
-        type: "negative",
-        message: error.message || "Не удалось удалить прибор",
-        position: "top",
+        type: 'negative',
+        message: error.message || 'Не удалось удалить прибор',
+        position: 'top'
       });
     }
   });
@@ -183,12 +189,12 @@ const delEquipment = () => {
 
 // prettier-ignore
 const columns = [
-  { name: "serial_number",    align: "center", label: "Серийный номер",  field: "serial_number",   sortable: true, style: "min-width: 100px; max-width: 100px; word-break: break-word; white-space: normal;" },
-  { name: "model",            align: "center", label: "Модель",          field: "model",           sortable: true, style: "min-width: 100px; max-width: 100px; word-break: break-word; white-space: normal;" },
-  { name: "manufacturer_id",  align: "center", label: "Производитель",   field: "manufacturer_id", sortable: true, style: "min-width: 100px; max-width: 100px; word-break: break-word; white-space: normal;" },
-  { name: "location_address", align: "center", label: "Адрес установки", field: "location_address",sortable: true, style: "min-width: 100px; max-width: 100px; word-break: break-word; white-space: normal;" },
-  { name: "installation_date",align: "center", label: "Дата установки",  field: (row) => new Date(row.installation_date).toLocaleDateString(), sortable: true, style: "min-width: 100px; max-width: 100px; word-break: break-word; white-space: normal;" },
-  { name: "status_id",        align: "center", label: "Статус",          field: "status_id",       sortable: true, style: "min-width: 100px; max-width: 100px; word-break: break-word; white-space: normal;" },
+  { name: 'serial_number',    align: 'center', label: 'Серийный номер',  field: 'serial_number',   sortable: true, style: 'min-width: 100px; max-width: 100px; word-break: break-word; white-space: normal;' },
+  { name: 'model',            align: 'center', label: 'Модель',          field: 'model',           sortable: true, style: 'min-width: 100px; max-width: 100px; word-break: break-word; white-space: normal;' },
+  { name: 'manufacturer_id',  align: 'center', label: 'Производитель',   field: 'manufacturer_id', sortable: true, style: 'min-width: 100px; max-width: 100px; word-break: break-word; white-space: normal;' },
+  { name: 'location_address', align: 'center', label: 'Адрес установки', field: 'location_address',sortable: true, style: 'min-width: 100px; max-width: 100px; word-break: break-word; white-space: normal;' },
+  { name: 'installation_date',align: 'center', label: 'Дата установки',  field: (row) => new Date(row.installation_date).toLocaleDateString(), sortable: true, style: 'min-width: 100px; max-width: 100px; word-break: break-word; white-space: normal;' },
+  { name: 'status_id',        align: 'center', label: 'Статус',          field: 'status_id',       sortable: true, style: 'min-width: 100px; max-width: 100px; word-break: break-word; white-space: normal;' }
 ];
 </script>
 

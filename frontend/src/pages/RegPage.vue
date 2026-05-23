@@ -102,19 +102,19 @@
 </template>
 
 <script setup>
-import { ref } from "vue";
-import { useRouter } from "vue-router";
-import { useQuasar } from "quasar";
+import { ref } from 'vue';
+import { useRouter } from 'vue-router';
+import { useQuasar } from 'quasar';
 
 const router = useRouter();
 const $q = useQuasar();
 
-const surname = ref("");
-const name = ref("");
-const middlename = ref("");
-const login = ref("");
-const password1 = ref("");
-const password2 = ref("");
+const surname = ref('');
+const name = ref('');
+const middlename = ref('');
+const login = ref('');
+const password1 = ref('');
+const password2 = ref('');
 const showPassword1 = ref(false);
 const showPassword2 = ref(false);
 const isLoading = ref(false);
@@ -127,10 +127,10 @@ const loginRegex = /^[a-zA-Z0-9_]{3,20}$/;
 const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d).{8,}$/;
 
 const nameRules = [
-  (val) => (val && val.trim().length > 0) || "Заполните поле",
-  (val) => cyrillicRegex.test(val?.trim()) || "Только кириллица",
-  (val) => val?.trim().length >= 2 || "Минимум 2 символа",
-  (val) => val?.trim().length <= 50 || "Максимум 50 символов",
+  (val) => (val && val.trim().length > 0) || 'Заполните поле',
+  (val) => cyrillicRegex.test(val?.trim()) || 'Только кириллица',
+  (val) => val?.trim().length >= 2 || 'Минимум 2 символа',
+  (val) => val?.trim().length <= 50 || 'Максимум 50 символов'
 ];
 
 const middlenameRules = [
@@ -138,59 +138,59 @@ const middlenameRules = [
     !val ||
     val.trim().length === 0 ||
     cyrillicRegex.test(val.trim()) ||
-    "Только кириллица",
+    'Только кириллица'
 ];
 
 const loginRules = [
-  (val) => (val && val.trim().length > 0) || "Заполните поле",
+  (val) => (val && val.trim().length > 0) || 'Заполните поле',
   (val) =>
-    loginRegex.test(val?.trim()) || "Латиница, цифры и _, от 3 до 20 символов",
+    loginRegex.test(val?.trim()) || 'Латиница, цифры и _, от 3 до 20 символов'
 ];
 
 const passwordRules = [
-  (val) => (val !== null && val !== "") || "Заполните поле",
-  (val) => val?.length >= 8 || "Минимум 8 символов",
-  (val) => passwordRegex.test(val) || "Минимум одна буква и одна цифра",
+  (val) => (val !== null && val !== '') || 'Заполните поле',
+  (val) => val?.length >= 8 || 'Минимум 8 символов',
+  (val) => passwordRegex.test(val) || 'Минимум одна буква и одна цифра'
 ];
 
 const password2Rules = [
-  (val) => (val !== null && val !== "") || "Повторите пароль",
-  (val) => val === password1.value || "Пароли не совпадают",
+  (val) => (val !== null && val !== '') || 'Повторите пароль',
+  (val) => val === password1.value || 'Пароли не совпадают'
 ];
 
-const onSubmit = async () => {
+const onSubmit = async() => {
   isLoading.value = true;
   try {
-    const response = await fetch("http://localhost:8000/auth/register", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
+    const response = await fetch('http://localhost:8000/auth/register', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         surname: surname.value.trim(),
         name: name.value.trim(),
         middlename: middlename.value.trim(),
         login: login.value.trim(),
-        password: password1.value,
-      }),
+        password: password1.value
+      })
     });
 
     const data = await response.json();
 
     if (!response.ok) {
-      throw new Error(data.detail || "Ошибка регистрации");
+      throw new Error(data.detail || 'Ошибка регистрации');
     }
 
     $q.notify({
-      type: "positive",
-      message: "Регистрация прошла успешно!",
-      position: "top",
+      type: 'positive',
+      message: 'Регистрация прошла успешно!',
+      position: 'top'
     });
-    router.push("/login");
+    router.push('/login');
   } catch (error) {
-    console.error("Register error:", error);
+    console.error('Register error:', error);
     $q.notify({
-      type: "negative",
-      message: error.message || "Ошибка при регистрации",
-      position: "top",
+      type: 'negative',
+      message: error.message || 'Ошибка при регистрации',
+      position: 'top'
     });
   } finally {
     isLoading.value = false;

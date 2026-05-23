@@ -81,13 +81,13 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from "vue";
-import { useQuasar } from "quasar";
-import YandexMap from "src/components/YandexMap.vue";
-import AddDefect from "src/components/AddDefect.vue";
-import UpdateDefect from "src/components/UpdateDefect.vue";
-import { useDefectStore } from "src/stores/useDefectStore";
-import { apiRequest } from "src/stores/api";
+import { ref, computed, onMounted } from 'vue';
+import { useQuasar } from 'quasar';
+import YandexMap from 'src/components/YandexMap.vue';
+import AddDefect from 'src/components/AddDefect.vue';
+import UpdateDefect from 'src/components/UpdateDefect.vue';
+import { useDefectStore } from 'src/stores/useDefectStore';
+import { apiRequest } from 'src/stores/api';
 
 const $q = useQuasar();
 const mapRef = ref(null);
@@ -108,12 +108,12 @@ const onRowClick = (event, row) => {
   selectedDefect.value = row;
 };
 
-const updateDefect = async () => {
+const updateDefect = async() => {
   if (!selectedDefect.value) {
     $q.notify({
-      type: "warning",
-      message: "Выберите дефект",
-      position: "top",
+      type: 'warning',
+      message: 'Выберите дефект',
+      position: 'top'
     });
     return;
   }
@@ -125,34 +125,34 @@ const updateDefect = async () => {
 const delDefect = () => {
   if (!selectedDefect.value) {
     $q.notify({
-      type: "warning",
-      message: "Выберите дефект",
-      position: "top",
+      type: 'warning',
+      message: 'Выберите дефект',
+      position: 'top'
     });
     return;
   }
 
   $q.dialog({
-    title: "Подтверждение",
+    title: 'Подтверждение',
     message: `Вы уверены, что хотите удалить дефект ${selectedDefect.value.equipment_model} '${selectedDefect.value.title}'?`,
     cancel: true,
-    persistent: true,
-  }).onOk(async () => {
+    persistent: true
+  }).onOk(async() => {
     try {
       await store.removeDefect(selectedDefect.value.id);
       selectedDefect.value = null;
       selectedRows.value = [];
 
       $q.notify({
-        type: "positive",
-        message: "Успешно удалено!",
-        position: "top",
+        type: 'positive',
+        message: 'Успешно удалено!',
+        position: 'top'
       });
     } catch (error) {
       $q.notify({
-        type: "negative",
-        message: error.message || "Не удалось удалить дефект",
-        position: "top",
+        type: 'negative',
+        message: error.message || 'Не удалось удалить дефект',
+        position: 'top'
       });
     }
   });
@@ -163,22 +163,22 @@ const mapPoints = computed(() =>
     coords: [d.latitude, d.longitude],
     name: d.equipment_model,
     color:
-      d.criticality === "high"
-        ? "red"
-        : d.criticality === "medium"
-          ? "yellow"
-          : "green",
-  })),
+      d.criticality === 'high'
+        ? 'red'
+        : d.criticality === 'medium'
+          ? 'yellow'
+          : 'green'
+  }))
 );
 
 // prettier-ignore
 const columns = [
-  { name: "equipment_serial", align: "center", label: "Серийный номер", field: "equipment_serial", sortable: true, style: "min-width: 85px; max-width: 85px; word-break: break-word; white-space: normal;", headerStyle: "word-break: break-word; white-space: normal;" },
-  { name: "equipment_model",  align: "center", label: "Модель",         field: "equipment_model",  sortable: true, style: "word-break: break-word; white-space: normal;" },
-  { name: "title",            align: "center", label: "Наименование",   field: "title",            sortable: true, style: "word-break: break-word; white-space: normal;" },
-  { name: "description",      align: "center", label: "Описание",       field: "description",      sortable: true, style: "word-break: break-word; white-space: normal;" },
-  { name: "status",           align: "center", label: "Статус",         field: "status",           sortable: true, style: "word-break: break-word; white-space: normal;" },
-  { name: "created_at",       align: "center", label: "Дата создания",  field: (row) => { const date = new Date(row.created_at); date.setHours(date.getHours() + 3); return date.toLocaleString(); }, sortable: true, style: "word-break: break-word; white-space: normal;" },
+  { name: 'equipment_serial', align: 'center', label: 'Серийный номер', field: 'equipment_serial', sortable: true, style: 'min-width: 85px; max-width: 85px; word-break: break-word; white-space: normal;', headerStyle: 'word-break: break-word; white-space: normal;' },
+  { name: 'equipment_model',  align: 'center', label: 'Модель',         field: 'equipment_model',  sortable: true, style: 'word-break: break-word; white-space: normal;' },
+  { name: 'title',            align: 'center', label: 'Наименование',   field: 'title',            sortable: true, style: 'word-break: break-word; white-space: normal;' },
+  { name: 'description',      align: 'center', label: 'Описание',       field: 'description',      sortable: true, style: 'word-break: break-word; white-space: normal;' },
+  { name: 'status',           align: 'center', label: 'Статус',         field: 'status',           sortable: true, style: 'word-break: break-word; white-space: normal;' },
+  { name: 'created_at',       align: 'center', label: 'Дата создания',  field: (row) => { const date = new Date(row.created_at); date.setHours(date.getHours() + 3); return date.toLocaleString(); }, sortable: true, style: 'word-break: break-word; white-space: normal;' }
 ];
 </script>
 

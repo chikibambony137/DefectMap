@@ -9,7 +9,10 @@
             color="positive"
             @click="isAddUserVisible = !isAddUserVisible"
           />
-          <q-btn size="sm" icon="delete" color="negative" @click="deleteUser" />
+          <q-btn size="sm"
+                 icon="delete"
+                 color="negative"
+                 @click="deleteUser" />
         </div>
 
         <q-table
@@ -133,11 +136,11 @@
 </template>
 
 <script setup>
-import { useUserStore } from "src/stores/useUserStore";
-import { onMounted, ref } from "vue";
-import { useQuasar } from "quasar";
-import avatarImg from "src/assets/avatar.png";
-import AddUser from "src/components/AddUser.vue";
+import { useUserStore } from 'src/stores/useUserStore';
+import { onMounted, ref } from 'vue';
+import { useQuasar } from 'quasar';
+import avatarImg from 'src/assets/avatar.png';
+import AddUser from 'src/components/AddUser.vue';
 
 const $q = useQuasar();
 const userStore = useUserStore();
@@ -148,12 +151,12 @@ const isLoading = ref(false);
 const showPassword = ref(false);
 const selectedRows = ref([]);
 const selectedUser = ref(null);
-const newPassword = ref("");
+const newPassword = ref('');
 
 const onRowClick = (event, row) => {
   selectedRows.value = [row];
   selectedUser.value = { ...row }; // копия, чтобы не мутировать стор напрямую
-  newPassword.value = "";
+  newPassword.value = '';
 };
 
 const cyrillicRegex = /^[а-яёА-ЯЁ\s-]+$/;
@@ -161,10 +164,10 @@ const loginRegex = /^[a-zA-Z0-9_]{3,20}$/;
 const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d).{8,}$/;
 
 const nameRules = [
-  (val) => (val && val.trim().length > 0) || "Заполните поле",
-  (val) => cyrillicRegex.test(val?.trim()) || "Только кириллические символы",
-  (val) => val?.trim().length >= 2 || "Минимум 2 символа",
-  (val) => val?.trim().length <= 50 || "Максимум 50 символов",
+  (val) => (val && val.trim().length > 0) || 'Заполните поле',
+  (val) => cyrillicRegex.test(val?.trim()) || 'Только кириллические символы',
+  (val) => val?.trim().length >= 2 || 'Минимум 2 символа',
+  (val) => val?.trim().length <= 50 || 'Максимум 50 символов'
 ];
 
 const middlenameRules = [
@@ -172,44 +175,44 @@ const middlenameRules = [
     !val ||
     val.trim().length === 0 ||
     cyrillicRegex.test(val.trim()) ||
-    "Только кириллические символы",
+    'Только кириллические символы'
 ];
 
 const loginRules = [
-  (val) => (val && val.trim().length > 0) || "Заполните поле",
+  (val) => (val && val.trim().length > 0) || 'Заполните поле',
   (val) =>
-    loginRegex.test(val?.trim()) || "Латиница, цифры и _, от 3 до 20 символов",
+    loginRegex.test(val?.trim()) || 'Латиница, цифры и _, от 3 до 20 символов'
 ];
 
 const newPasswordRules = [
-  (val) => !val || val.length === 0 || val.length >= 8 || "Минимум 8 символов",
+  (val) => !val || val.length === 0 || val.length >= 8 || 'Минимум 8 символов',
   (val) =>
     !val ||
     val.length === 0 ||
     passwordRegex.test(val) ||
-    "Минимум одна буква и одна цифра",
+    'Минимум одна буква и одна цифра'
 ];
 
-const confirmChange = async () => {
+const confirmChange = async() => {
   const valid = await formRef.value?.validate();
   if (!valid) return;
 
   $q.dialog({
-    title: "Подтверждение",
-    message: "Вы уверены, что хотите изменить данные пользователя?",
+    title: 'Подтверждение',
+    message: 'Вы уверены, что хотите изменить данные пользователя?',
     cancel: true,
-    persistent: true,
+    persistent: true
   }).onOk(submit);
 };
 
-const submit = async () => {
+const submit = async() => {
   isLoading.value = true;
   try {
     const updateData = {
       surname: selectedUser.value.surname.trim(),
       name: selectedUser.value.name.trim(),
-      middlename: selectedUser.value.middlename?.trim() ?? "",
-      login: selectedUser.value.login.trim(),
+      middlename: selectedUser.value.middlename?.trim() ?? '',
+      login: selectedUser.value.login.trim()
     };
 
     if (newPassword.value) {
@@ -218,23 +221,23 @@ const submit = async () => {
 
     await userStore.updateUser(
       updateData,
-      selectedUser.value.id,
+      selectedUser.value.id
     );
 
     await userStore.fetchUsers();
-    newPassword.value = "";
+    newPassword.value = '';
 
     $q.notify({
-      type: "positive",
-      message: "Данные пользователя обновлены",
-      position: "top",
+      type: 'positive',
+      message: 'Данные пользователя обновлены',
+      position: 'top'
     });
   } catch (error) {
-    console.error("Ошибка при обновлении пользователя:", error);
+    console.error('Ошибка при обновлении пользователя:', error);
     $q.notify({
-      type: "negative",
-      message: error.message || "Не удалось обновить данные",
-      position: "top",
+      type: 'negative',
+      message: error.message || 'Не удалось обновить данные',
+      position: 'top'
     });
   } finally {
     isLoading.value = false;
@@ -244,34 +247,34 @@ const submit = async () => {
 const deleteUser = () => {
   if (!selectedUser.value) {
     $q.notify({
-      type: "warning",
-      message: "Выберите пользователя",
-      position: "top",
+      type: 'warning',
+      message: 'Выберите пользователя',
+      position: 'top'
     });
     return;
   }
 
   const { surname, name, middlename } = selectedUser.value;
   $q.dialog({
-    title: "Подтверждение",
-    message: `Вы уверены, что хотите удалить пользователя ${surname} ${name} ${middlename ?? ""}?`,
+    title: 'Подтверждение',
+    message: `Вы уверены, что хотите удалить пользователя ${surname} ${name} ${middlename ?? ''}?`,
     cancel: true,
-    persistent: true,
-  }).onOk(async () => {
+    persistent: true
+  }).onOk(async() => {
     try {
       await userStore.deleteUser(selectedUser.value.id);
       selectedUser.value = null;
       selectedRows.value = [];
       $q.notify({
-        type: "positive",
-        message: "Пользователь удалён",
-        position: "top",
+        type: 'positive',
+        message: 'Пользователь удалён',
+        position: 'top'
       });
     } catch (error) {
       $q.notify({
-        type: "negative",
-        message: error.message || "Не удалось удалить пользователя",
-        position: "top",
+        type: 'negative',
+        message: error.message || 'Не удалось удалить пользователя',
+        position: 'top'
       });
     }
   });
@@ -281,10 +284,10 @@ const isAddUserVisible = ref(false);
 
 // prettier-ignore
 const columns = [
-  { name: "surname",    align: "center", label: "Фамилия", field: "surname",    sortable: true, style: "min-width: 100px; max-width: 100px; word-break: break-word; white-space: normal;" },
-  { name: "name",       align: "center", label: "Имя",     field: "name",       sortable: true, style: "min-width: 100px; max-width: 100px; word-break: break-word; white-space: normal;" },
-  { name: "middlename", align: "center", label: "Отчество", field: "middlename", sortable: true, style: "min-width: 100px; max-width: 100px; word-break: break-word; white-space: normal;" },
-  { name: "login",      align: "center", label: "Логин",   field: "login",      sortable: true, style: "min-width: 100px; max-width: 100px; word-break: break-word; white-space: normal;" },
-  { name: "role_id",    align: "center", label: "Роль",    field: "role_id",    sortable: true, style: "min-width: 100px; max-width: 100px; word-break: break-word; white-space: normal;" },
+  { name: 'surname',    align: 'center', label: 'Фамилия', field: 'surname',    sortable: true, style: 'min-width: 100px; max-width: 100px; word-break: break-word; white-space: normal;' },
+  { name: 'name',       align: 'center', label: 'Имя',     field: 'name',       sortable: true, style: 'min-width: 100px; max-width: 100px; word-break: break-word; white-space: normal;' },
+  { name: 'middlename', align: 'center', label: 'Отчество', field: 'middlename', sortable: true, style: 'min-width: 100px; max-width: 100px; word-break: break-word; white-space: normal;' },
+  { name: 'login',      align: 'center', label: 'Логин',   field: 'login',      sortable: true, style: 'min-width: 100px; max-width: 100px; word-break: break-word; white-space: normal;' },
+  { name: 'role_id',    align: 'center', label: 'Роль',    field: 'role_id',    sortable: true, style: 'min-width: 100px; max-width: 100px; word-break: break-word; white-space: normal;' }
 ];
 </script>

@@ -13,18 +13,18 @@
 </template>
 
 <script setup>
-import { onMounted, ref, watch } from "vue";
-import { useYandexMapLoader } from "src/composables/useYandexMapLoader";
+import { onMounted, ref, watch } from 'vue';
+import { useYandexMapLoader } from 'src/composables/useYandexMapLoader';
 
 const props = defineProps({
   center: {
     type: Array,
-    default: () => [55.751574, 37.573856],
+    default: () => [55.751574, 37.573856]
   },
   points: {
     type: Array,
-    default: () => [],
-  },
+    default: () => []
+  }
 });
 
 const { loadMapApi } = useYandexMapLoader();
@@ -33,7 +33,7 @@ let map = null;
 let clusterer = null;
 
 const initMap = () => {
-  const container = document.getElementById("map");
+  const container = document.getElementById('map');
   if (
     !container ||
     container.clientWidth === 0 ||
@@ -43,33 +43,33 @@ const initMap = () => {
     return;
   }
 
-  map = new window.ymaps.Map("map", {
+  map = new window.ymaps.Map('map', {
     center: props.center,
     zoom: 10,
-    controls: ["zoomControl", "fullscreenControl"],
+    controls: ['zoomControl', 'fullscreenControl']
   });
 
   clusterer = new window.ymaps.Clusterer({
-    preset: "islands#invertedVioletClusterIcons",
+    preset: 'islands#invertedVioletClusterIcons',
     groupByCoordinates: false,
     zoomMargin: 20,
     minClusterSize: 2,
     clusterDisableClickZoom: false,
     clusterOpenBalloonOnClick: true,
-    clusterIconColor: "black",
-    clusterNumbers: ["#FFFFFF"],
+    clusterIconColor: 'black',
+    clusterNumbers: ['#FFFFFF']
   });
 
   addPointsToMap();
 };
 
-onMounted(async () => {
+onMounted(async() => {
   try {
     await loadMapApi(process.env.VITE_YANDEX_API_KEY);
     loading.value = false;
     initMap();
   } catch (error) {
-    console.error("Ошибка загрузки карты:", error);
+    console.error('Ошибка загрузки карты:', error);
   }
 });
 
@@ -81,23 +81,21 @@ const addPointsToMap = () => {
         new window.ymaps.Placemark(
           point.coords,
           { hintContent: point.name, balloonContent: `${point.name}` },
-          { preset: getPlacemarkColor(point.color) },
-        ),
+          { preset: getPlacemarkColor(point.color) }
+        )
     );
     clusterer.add(placemarks);
     map.geoObjects.add(clusterer);
   }
 };
 
-
-
 const getPlacemarkColor = (color) => {
-  if (color === "red") return "islands#redIcon";
-  if (color === "orange") return "islands#orangeIcon";
-  if (color === "yellow") return "islands#yellowIcon";
-  if (color === "green") return "islands#greenIcon";
+  if (color === 'red') return 'islands#redIcon';
+  if (color === 'orange') return 'islands#orangeIcon';
+  if (color === 'yellow') return 'islands#yellowIcon';
+  if (color === 'green') return 'islands#greenIcon';
   
-  return "islands#grayIcon";
+  return 'islands#grayIcon';
 };
 
 // Следим за изменением центра карты и перемещаем карту
@@ -108,7 +106,7 @@ watch(
       map.setCenter(newCenter, 12); // зум 12, можно настроить
     }
   },
-  { deep: true, immediate: false }, // immediate = false, чтобы не вызывать при старте, иначе map ещё не создан
+  { deep: true, immediate: false } // immediate = false, чтобы не вызывать при старте, иначе map ещё не создан
 );
 
 // Если массив points изменится – обновляем метки (очищаем и добавляем заново)
@@ -124,16 +122,16 @@ watch(
               point.coords,
               {
                 hintContent: point.name,
-                balloonContent: `${point.name}`,
+                balloonContent: `${point.name}`
               },
-              { preset: getPlacemarkColor(point.color) },
-            ),
+              { preset: getPlacemarkColor(point.color) }
+            )
         );
         clusterer.add(placemarks);
       }
     }
   },
-  { deep: true },
+  { deep: true }
 );
 
 const invalidateSize = () => {

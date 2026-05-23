@@ -1,15 +1,15 @@
-import { defineStore } from "pinia";
-import { apiRequest } from "./api";
+import { defineStore } from 'pinia';
+import { apiRequest } from './api';
 
-export const useDefectStatusStore = defineStore("defectStatuses", {
+export const useDefectStatusStore = defineStore('defectStatuses', {
   state: () => ({
-    statuses: [],
+    statuses: []
   }),
 
   actions: {
     async fetchDefectStatuses() {
-      const res = await apiRequest("/defect-statuses");
+      const res = await apiRequest('/defect-statuses');
       if (res) this.statuses = await res.json();
-    },
-  },
+    }
+  }
 });

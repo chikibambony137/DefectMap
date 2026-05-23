@@ -2,7 +2,11 @@
   <q-card style="min-width: 450px">
     <q-card-section class="row items-center justify-between q-pb-none">
       <div class="text-h6">Редактировать дефект</div>
-      <q-btn icon="close" flat round dense @click="$emit('close')" />
+      <q-btn icon="close"
+             flat
+             round
+             dense
+             @click="$emit('close')" />
     </q-card-section>
 
     <q-card-section>
@@ -93,15 +97,15 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from "vue";
-import { useQuasar } from "quasar";
-import { useDefectStore } from "src/stores/useDefectStore";
-import { useEquipmentStore } from "src/stores/useEquipmentStore";
-import { useDefectTypeStore } from "src/stores/useDefectTypeStore";
-import { useDefectStatusStore } from "src/stores/useDefectStatusStore";
+import { ref, computed, onMounted } from 'vue';
+import { useQuasar } from 'quasar';
+import { useDefectStore } from 'src/stores/useDefectStore';
+import { useEquipmentStore } from 'src/stores/useEquipmentStore';
+import { useDefectTypeStore } from 'src/stores/useDefectTypeStore';
+import { useDefectStatusStore } from 'src/stores/useDefectStatusStore';
 
 const props = defineProps({ defect: Object });
-const emit = defineEmits(["close", "updated"]);
+const emit = defineEmits(['close', 'updated']);
 
 const $q = useQuasar();
 const defectStore = useDefectStore();
@@ -121,65 +125,65 @@ onMounted(() => {
 const equipmentOptions = computed(() =>
   equipmentStore.items.map((eq) => ({
     label: `${eq.serial_number} — ${eq.model}`,
-    value: eq.id,
-  })),
+    value: eq.id
+  }))
 );
 
 const typeOptions = computed(() =>
   defectTypeStore.defectTypes.map((type) => ({
     label: type.description,
-    value: type.id,
-  })),
+    value: type.id
+  }))
 );
 
 const statusOptions = computed(() =>
   defectStatusStore.statuses.map((s) => ({
     label: s.name,
-    value: s.id,
-  })),
+    value: s.id
+  }))
 );
 
 const criticalityOptions = [
-  { label: "Высокая", value: 3 },
-  { label: "Средняя", value: 2 },
-  { label: "Низкая", value: 1 },
+  { label: 'Высокая', value: 3 },
+  { label: 'Средняя', value: 2 },
+  { label: 'Низкая', value: 1 }
 ];
 
 const form = ref({
   equipment_id: props.defect?.equipment_id ?? null,
-  title: props.defect?.title ?? "",
-  description: props.defect?.description ?? "",
+  title: props.defect?.title ?? '',
+  description: props.defect?.description ?? '',
   criticality_id: props.defect?.criticality_id ?? null,
   status_id: props.defect?.status_id ?? null,
-  defect_type_id: props.defect?.defect_type_id ?? null,
+  defect_type_id: props.defect?.defect_type_id ?? null
 });
 
-const onSubmit = async () => {
+const onSubmit = async() => {
   isLoading.value = true;
   try {
     await defectStore.updateDefect(
       {
         ...form.value,
         title: form.value.title.trim(),
-        description: form.value.description.trim(),
+        description: form.value.description.trim()
       },
-      props.defect.id,
+      props.defect.id
     );
 
     $q.notify({
-      type: "positive",
-      message: "Дефект успешно обновлён",
-      position: "top",
+      type: 'positive',
+      message: 'Дефект успешно обновлён',
+      position: 'top'
     });
 
-    emit("updated");
-    emit("close");
+    emit('updated');
+    emit('close');
   } catch (error) {
-    console.error("Ошибка при обновлении дефекта:", error);
+    console.error('Ошибка при обновлении дефекта:', error);
     $q.notify({
-      type: "negative",
-      message: error.message || "Не удалось обновить дефект",
-      position: "top",
+      type: 'negative',
+      message: error.message || 'Не удалось обновить дефект',
+      position: 'top'
     });
   } finally {
     isLoading.value = false;

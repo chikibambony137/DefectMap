@@ -10,12 +10,16 @@
     "test": "echo \"No test specified\" && exit 0",
     "dev": "quasar dev",
     "build": "quasar build",
-    "postinstall": "quasar prepare"
+    "postinstall": "quasar prepare",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix"
   },
   "dependencies": {
+    "@eslint/js": "^10.0.1",
     "@quasar/extras": "^1.16.4",
     "axios": "^1.15.2",
     "dotenv": "^17.4.2",
+    "eslint-config-prettier": "^10.1.8",
     "pinia": "^3.0.1",
     "quasar": "^2.16.0",
     "vue": "^3.5.22",
