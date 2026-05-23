@@ -23,7 +23,12 @@
           v-model="form.title"
           label="Наименование дефекта"
           lazy-rules
-          :rules="[(val) => (val && val.length > 0) || 'Заполните поле']"
+          counter
+          maxlength="100"
+          :rules="[
+            (val) => (val && val.trim().length > 0) || 'Заполните поле',
+            (val) => val.trim().length >= 3 || 'Минимум 3 символа',
+          ]"
         />
 
         <q-input
@@ -32,7 +37,12 @@
           label="Описание"
           type="textarea"
           lazy-rules
-          :rules="[(val) => (val && val.length > 0) || 'Заполните поле']"
+          counter
+          maxlength="1000"
+          :rules="[
+            (val) => (val && val.trim().length > 0) || 'Заполните поле',
+            (val) => val.trim().length >= 10 || 'Минимум 10 символов',
+          ]"
         />
 
         <q-select
@@ -43,7 +53,7 @@
           emit-value
           map-options
           lazy-rules
-          :rules="[(val) => !!val || 'Выберите тип']"
+          :rules="[(val) => !!val || 'Выберите тип дефекта']"
         />
 
         <q-select
@@ -70,7 +80,12 @@
 
         <q-card-actions align="right" class="q-pt-md">
           <q-btn flat label="Отмена" @click="$emit('close')" />
-          <q-btn label="Обновить" type="submit" color="positive" />
+          <q-btn
+            label="Обновить"
+            type="submit"
+            color="positive"
+            :loading="isLoading"
+          />
         </q-card-actions>
       </q-form>
     </q-card-section>
@@ -79,6 +94,7 @@
 
 <script setup>
 import { ref, computed, onMounted } from "vue";
+import { useQuasar } from "quasar";
 import { useDefectStore } from "src/stores/useDefectStore";
 import { useEquipmentStore } from "src/stores/useEquipmentStore";
 import { useDefectTypeStore } from "src/stores/useDefectTypeStore";
@@ -87,36 +103,40 @@ import { useDefectStatusStore } from "src/stores/useDefectStatusStore";
 const props = defineProps({ defect: Object });
 const emit = defineEmits(["close", "updated"]);
 
+const $q = useQuasar();
 const defectStore = useDefectStore();
 const equipmentStore = useEquipmentStore();
 const defectTypeStore = useDefectTypeStore();
 const defectStatusStore = useDefectStatusStore();
 
+const isLoading = ref(false);
+
 onMounted(() => {
   if (!equipmentStore.items.length) equipmentStore.fetchEquipment();
   if (!defectTypeStore.defectTypes.length) defectTypeStore.fetchDefectTypes();
-  if (!defectStatusStore.statuses.length) defectStatusStore.fetchDefectStatuses();
+  if (!defectStatusStore.statuses.length)
+    defectStatusStore.fetchDefectStatuses();
 });
 
 const equipmentOptions = computed(() =>
   equipmentStore.items.map((eq) => ({
     label: `${eq.serial_number} — ${eq.model}`,
     value: eq.id,
-  }))
+  })),
 );
 
 const typeOptions = computed(() =>
   defectTypeStore.defectTypes.map((type) => ({
     label: type.description,
     value: type.id,
-  }))
+  })),
 );
 
 const statusOptions = computed(() =>
   defectStatusStore.statuses.map((s) => ({
     label: s.name,
     value: s.id,
-  }))
+  })),
 );
 
 const criticalityOptions = [
@@ -135,9 +155,34 @@ const form = ref({
 });
 
 const onSubmit = async () => {
-  await defectStore.updateDefect({ ...form.value }, props.defect.id);
-  alert("Успешно обновлено!");
-  emit("updated");
-  emit("close");
+  isLoading.value = true;
+  try {
+    await defectStore.updateDefect(
+      {
+        ...form.value,
+        title: form.value.title.trim(),
+        description: form.value.description.trim(),
+      },
+      props.defect.id,
+    );
+
+    $q.notify({
+      type: "positive",
+      message: "Дефект успешно обновлён",
+      position: "top",
+    });
+
+    emit("updated");
+    emit("close");
+  } catch (error) {
+    console.error("Ошибка при обновлении дефекта:", error);
+    $q.notify({
+      type: "negative",
+      message: error.message || "Не удалось обновить дефект",
+      position: "top",
+    });
+  } finally {
+    isLoading.value = false;
+  }
 };
 </script>

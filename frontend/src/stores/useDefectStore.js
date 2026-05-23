@@ -23,7 +23,13 @@ export const useDefectStore = defineStore("defects", {
         method: "POST",
         body: JSON.stringify(defect),
       });
-      if (res?.ok) await this.fetchDefects();
+
+      if (!res?.ok) {
+        const data = await res?.json().catch(() => ({}));
+        throw new Error(data?.detail || "Ошибка при добавлении дефекта");
+      }
+
+      await this.fetchDefects();
     },
 
     async updateDefect(defect, defectId) {
@@ -32,7 +38,10 @@ export const useDefectStore = defineStore("defects", {
         body: JSON.stringify(defect),
       });
       if (res?.ok) await this.fetchDefects();
-      else console.error("updateDefect error");
+      else {
+        const data = await res?.json().catch(() => ({}));
+        throw new Error(data?.detail || "Ошибка при обновлении дефекта");
+      }
     },
 
     async removeDefect(defectId) {
@@ -42,7 +51,9 @@ export const useDefectStore = defineStore("defects", {
       if (res?.ok) {
         await this.fetchDefects();
         alert("Успешно удалено!");
-      } else console.error("removeDefect error");
+      } else {
+        throw new Error("Ошибка при удалении дефекта");
+      }
     },
   },
 });

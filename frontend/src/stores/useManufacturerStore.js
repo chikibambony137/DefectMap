@@ -17,7 +17,13 @@ export const useManufacturerStore = defineStore("manufacturers", {
         method: "POST",
         body: JSON.stringify(data),
       });
-      if (res?.ok) await this.fetchManufacturers();
+
+      if (!res?.ok) {
+        const data = await res?.json().catch(() => ({}));
+        throw new Error(data?.detail || "Ошибка при добавлении производителя");
+      }
+
+      await this.fetchManufacturers();
     },
 
     async updateManufacturer(data, id) {
@@ -25,7 +31,13 @@ export const useManufacturerStore = defineStore("manufacturers", {
         method: "PUT",
         body: JSON.stringify(data),
       });
-      if (res?.ok) await this.fetchManufacturers();
+
+      if (!res?.ok) {
+        const data = await res?.json().catch(() => ({}));
+        throw new Error(data?.detail || "Ошибка при обновлении производителя");
+      }
+
+      await this.fetchManufacturers();
     },
 
     async removeManufacturer(id) {
@@ -35,7 +47,8 @@ export const useManufacturerStore = defineStore("manufacturers", {
       if (res?.ok) {
         await this.fetchManufacturers();
         alert("Успешно удалено!");
-      }
+      } else
+        throw new Error(data?.detail || "Ошибка при удалении производителя");
     },
   },
 });

@@ -23,7 +23,13 @@ export const useEquipmentStore = defineStore("equipment", {
         method: "POST",
         body: JSON.stringify(equipment),
       });
-      if (res?.ok) await this.fetchEquipment();
+
+      if (!res?.ok) {
+        const data = await res?.json().catch(() => ({}));
+        throw new Error(data?.detail || "Ошибка при добавлении прибора");
+      }
+
+      await this.fetchEquipment();
     },
 
     async updateEquipment(equipment, equipmentId) {
@@ -31,8 +37,13 @@ export const useEquipmentStore = defineStore("equipment", {
         method: "PUT",
         body: JSON.stringify(equipment),
       });
-      if (res?.ok) await this.fetchEquipment();
-      else console.error("updateEquipment error");
+
+      if (!res?.ok) {
+        const data = await res?.json().catch(() => ({}));
+        throw new Error(data?.detail || "Ошибка при обновлении прибора");
+      }
+
+      await this.fetchEquipment();
     },
 
     async removeEquipment(equipmentId) {
@@ -42,7 +53,7 @@ export const useEquipmentStore = defineStore("equipment", {
       if (res?.ok) {
         await this.fetchEquipment();
         alert("Успешно удалено!");
-      } else console.error("removeEquipment error");
+      } else throw new Error(data?.detail || "Ошибка при удалении прибора");
     },
   },
 });

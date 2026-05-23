@@ -45,10 +45,12 @@ export const useUserStore = defineStore("users", {
         method: "POST",
         body: JSON.stringify(user),
       });
+
       if (res?.ok) {
         const newUser = await res.json();
         this.users.push(newUser);
-      }
+      } else
+        throw new Error(data?.detail || "Ошибка при добавлении пользователя");
     },
 
     async updateUser(user, userId) {
@@ -56,16 +58,18 @@ export const useUserStore = defineStore("users", {
         method: "PUT",
         body: JSON.stringify(user),
       });
-      return res?.ok || false;
+      if (!res?.ok)
+        throw new Error(data?.detail || "Ошибка при обновлении пользователя");
+      else this.fetchUsers();
     },
 
     async deleteUser(userId) {
       const res = await apiRequest(`/users/${userId}`, {
         method: "DELETE",
       });
-      if (res?.ok) {
-        this.fetchUsers();
-      }
+      if (!res?.ok) {
+        throw new Error(data?.detail || "Ошибка при удалении пользователя");
+      } else this.fetchUsers();
     },
   },
 });
