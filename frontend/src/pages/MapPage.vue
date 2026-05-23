@@ -82,13 +82,13 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from "vue";
-import { useQuasar } from "quasar";
-import YandexMap from "src/components/YandexMap.vue";
-import AddDefect from "src/components/AddDefect.vue";
-import UpdateDefect from "src/components/UpdateDefect.vue";
-import { useDefectStore } from "src/stores/useDefectStore";
-import { apiRequest } from "src/stores/api";
+import { ref, computed, onMounted } from 'vue';
+import { useQuasar } from 'quasar';
+import YandexMap from 'src/components/YandexMap.vue';
+import AddDefect from 'src/components/AddDefect.vue';
+import UpdateDefect from 'src/components/UpdateDefect.vue';
+import { useDefectStore } from 'src/stores/useDefectStore';
+import { apiRequest } from 'src/stores/api';
 
 const $q = useQuasar();
 const mapRef = ref(null);
@@ -97,9 +97,9 @@ const onSplitterResize = () => mapRef.value?.invalidateSize();
 
 const store = useDefectStore();
 const mapReady = ref(false);
-onMounted(async () => {
+onMounted(async() => {
   await store.fetchDefects();
-  mapReady.value = true; 
+  mapReady.value = true;
 });
 
 const isAddDefectVisible = ref(false);
@@ -113,12 +113,12 @@ const onRowClick = (event, row) => {
   selectedDefect.value = row;
 };
 
-const updateDefect = async () => {
+const updateDefect = async() => {
   if (!selectedDefect.value) {
     $q.notify({
-      type: "warning",
-      message: "Выберите дефект",
-      position: "top",
+      type: 'warning',
+      message: 'Выберите дефект',
+      position: 'top'
     });
     return;
   }
@@ -130,34 +130,34 @@ const updateDefect = async () => {
 const delDefect = () => {
   if (!selectedDefect.value) {
     $q.notify({
-      type: "warning",
-      message: "Выберите дефект",
-      position: "top",
+      type: 'warning',
+      message: 'Выберите дефект',
+      position: 'top'
     });
     return;
   }
 
   $q.dialog({
-    title: "Подтверждение",
+    title: 'Подтверждение',
     message: `Вы уверены, что хотите удалить дефект ${selectedDefect.value.equipment_model} '${selectedDefect.value.title}'?`,
     cancel: true,
-    persistent: true,
-  }).onOk(async () => {
+    persistent: true
+  }).onOk(async() => {
     try {
       await store.removeDefect(selectedDefect.value.id);
       selectedDefect.value = null;
       selectedRows.value = [];
 
       $q.notify({
-        type: "positive",
-        message: "Успешно удалено!",
-        position: "top",
+        type: 'positive',
+        message: 'Успешно удалено!',
+        position: 'top'
       });
     } catch (error) {
       $q.notify({
-        type: "negative",
-        message: error.message || "Не удалось удалить дефект",
-        position: "top",
+        type: 'negative',
+        message: error.message || 'Не удалось удалить дефект',
+        position: 'top'
       });
     }
   });
@@ -168,12 +168,12 @@ const mapPoints = computed(() =>
     coords: [d.latitude, d.longitude],
     name: d.equipment_model,
     color:
-      d.criticality === "high"
-        ? "red"
-        : d.criticality === "medium"
-          ? "yellow"
-          : "green",
-  })),
+      d.criticality === 'high'
+        ? 'red'
+        : d.criticality === 'medium'
+          ? 'yellow'
+          : 'green'
+  }))
 );
 
 // prettier-ignore
