@@ -1,5 +1,5 @@
 from typing import List, Optional
-from datetime import datetime
+from datetime import UTC, datetime
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 from core import redis_client
@@ -126,7 +126,7 @@ def create_defect(
     defect = Defect(
         **defect_data.model_dump(),
         user_id=current_user.id,
-        created_at=datetime.utcnow()
+        created_at=datetime.now(UTC)
     )
     db.add(defect)
     db.commit()
