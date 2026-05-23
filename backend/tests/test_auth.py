@@ -1,6 +1,3 @@
-import pytest
-
-
 class TestRegister:
     def test_register_success(self, client, viewer_role):
         response = client.post("/auth/register", json={

@@ -23,7 +23,9 @@ engine = create_engine(
     SQLALCHEMY_DATABASE_URL,
     connect_args={"check_same_thread": False}
 )
-TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+TestingSessionLocal = sessionmaker(autocommit=False,
+                                   autoflush=False,
+                                   bind=engine)
 
 
 @pytest.fixture(scope="session", autouse=True)
@@ -244,7 +246,8 @@ def criticality(db):
 
 
 @pytest.fixture()
-def defect(db, equipment, defect_status, defect_type, criticality, engineer_user):
+def defect(db, equipment, defect_status, defect_type,
+           criticality, engineer_user):
     d = Defect(
         title="Тестовый дефект",
         description="Описание тестового дефекта",
