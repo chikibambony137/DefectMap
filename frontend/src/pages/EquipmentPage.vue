@@ -88,6 +88,7 @@
 
 <script setup>
 import { computed, onMounted, ref } from "vue";
+import { useQuasar } from "quasar";
 import YandexMap from "src/components/YandexMap.vue";
 import AddEquipment from "src/components/AddEquipment.vue";
 import UpdateEquipment from "src/components/UpdateEquipment.vue";
@@ -96,6 +97,7 @@ import { useEquipmentStatusStore } from "src/stores/useEquipmentStatusStore";
 import { useManufacturerStore } from "src/stores/useManufacturerStore";
 import { apiRequest } from "src/stores/api";
 
+const $q = useQuasar();
 const store = useEquipmentStore();
 const statusStore = useEquipmentStatusStore();
 const manufacturerStore = useManufacturerStore();
@@ -107,13 +109,11 @@ onMounted(() => {
     manufacturerStore.fetchManufacturers();
 });
 
-// хелперы для отображения имён
 const statusName = (id) =>
   statusStore.statuses.find((s) => s.id === id)?.name ?? id;
 const manufacturerName = (id) =>
   manufacturerStore.manufacturers.find((m) => m.id === id)?.name ?? id;
 
-// id статуса "Активен" для иконки 🟢/🔴
 const activeStatusId = computed(
   () => statusStore.statuses.find((s) => s.name === "Активен")?.id,
 );
@@ -134,29 +134,61 @@ const isAddEquipmentVisible = ref(false);
 const isUpdateEquipmentVisible = ref(false);
 
 const updateEquipment = () => {
-  if (selectedEquipment.value) isUpdateEquipmentVisible.value = true;
-  else alert("Выберите прибор!");
+  if (selectedEquipment.value) {
+    isUpdateEquipmentVisible.value = true;
+  } else {
+    $q.notify({
+      type: "warning",
+      message: "Выберите прибор",
+      position: "top",
+    });
+  }
 };
 
 const delEquipment = () => {
   if (!selectedEquipment.value) {
-    alert("Выберите прибор!");
+    $q.notify({
+      type: "warning",
+      message: "Выберите прибор",
+      position: "top",
+    });
     return;
   }
-  if (
-    confirm(`Вы уверены, что хотите удалить ${selectedEquipment.value.model}?`)
-  )
-    store.removeEquipment(selectedEquipment.value.id);
+
+  $q.dialog({
+    title: "Подтверждение",
+    message: `Вы уверены, что хотите удалить ${selectedEquipment.value.model}?`,
+    cancel: true,
+    persistent: true,
+  }).onOk(async () => {
+    try {
+      await store.removeEquipment(selectedEquipment.value.id);
+      selectedEquipment.value = null;
+      selectedRows.value = [];
+
+      $q.notify({
+        type: "positive",
+        message: "Успешно удалено!",
+        position: "top",
+      });
+    } catch (error) {
+      $q.notify({
+        type: "negative",
+        message: error.message || "Не удалось удалить прибор",
+        position: "top",
+      });
+    }
+  });
 };
 
 // prettier-ignore
 const columns = [
-  { name: "serial_number",   align: "center", label: "Серийный номер",  field: "serial_number",   sortable: true, style: "min-width: 100px; max-width: 100px; word-break: break-word; white-space: normal;" },
-  { name: "model",           align: "center", label: "Модель",          field: "model",           sortable: true, style: "min-width: 100px; max-width: 100px; word-break: break-word; white-space: normal;" },
-  { name: "manufacturer_id", align: "center", label: "Производитель",   field: "manufacturer_id", sortable: true, style: "min-width: 100px; max-width: 100px; word-break: break-word; white-space: normal;" },
-  { name: "location_address",align: "center", label: "Адрес установки", field: "location_address",sortable: true, style: "min-width: 100px; max-width: 100px; word-break: break-word; white-space: normal;" },
-  { name: "installation_date",align:"center", label: "Дата установки",  field: (row) => new Date(row.installation_date).toLocaleDateString(),sortable: true,style: "min-width: 100px; max-width: 100px; word-break: break-word; white-space: normal;" },
-  { name: "status_id",       align: "center", label: "Статус",          field: "status_id",       sortable: true, style: "min-width: 100px; max-width: 100px; word-break: break-word; white-space: normal;" },
+  { name: "serial_number",    align: "center", label: "Серийный номер",  field: "serial_number",   sortable: true, style: "min-width: 100px; max-width: 100px; word-break: break-word; white-space: normal;" },
+  { name: "model",            align: "center", label: "Модель",          field: "model",           sortable: true, style: "min-width: 100px; max-width: 100px; word-break: break-word; white-space: normal;" },
+  { name: "manufacturer_id",  align: "center", label: "Производитель",   field: "manufacturer_id", sortable: true, style: "min-width: 100px; max-width: 100px; word-break: break-word; white-space: normal;" },
+  { name: "location_address", align: "center", label: "Адрес установки", field: "location_address",sortable: true, style: "min-width: 100px; max-width: 100px; word-break: break-word; white-space: normal;" },
+  { name: "installation_date",align: "center", label: "Дата установки",  field: (row) => new Date(row.installation_date).toLocaleDateString(), sortable: true, style: "min-width: 100px; max-width: 100px; word-break: break-word; white-space: normal;" },
+  { name: "status_id",        align: "center", label: "Статус",          field: "status_id",       sortable: true, style: "min-width: 100px; max-width: 100px; word-break: break-word; white-space: normal;" },
 ];
 </script>
 

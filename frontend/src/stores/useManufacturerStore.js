@@ -46,7 +46,6 @@ export const useManufacturerStore = defineStore("manufacturers", {
       });
       if (res?.ok) {
         await this.fetchManufacturers();
-        alert("Успешно удалено!");
       } else
         throw new Error(data?.detail || "Ошибка при удалении производителя");
     },

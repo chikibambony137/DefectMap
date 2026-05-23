@@ -50,7 +50,6 @@ export const useDefectStore = defineStore("defects", {
       });
       if (res?.ok) {
         await this.fetchDefects();
-        alert("Успешно удалено!");
       } else {
         throw new Error("Ошибка при удалении дефекта");
       }

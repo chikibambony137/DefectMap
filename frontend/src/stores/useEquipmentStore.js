@@ -52,7 +52,6 @@ export const useEquipmentStore = defineStore("equipment", {
       });
       if (res?.ok) {
         await this.fetchEquipment();
-        alert("Успешно удалено!");
       } else throw new Error(data?.detail || "Ошибка при удалении прибора");
     },
   },

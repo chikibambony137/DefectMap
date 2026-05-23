@@ -18,15 +18,28 @@
 
         <q-input
           filled
-          type="password"
+          :type="showPassword ? 'text' : 'password'"
           v-model="password"
           label="Пароль"
           lazy-rules
           :rules="[(val) => (val !== null && val !== '') || 'Заполните поле']"
-        />
+        >
+          <template #append>
+            <q-icon
+              :name="showPassword ? 'visibility_off' : 'visibility'"
+              class="cursor-pointer"
+              @click="showPassword = !showPassword"
+            />
+          </template>
+        </q-input>
 
         <div class="row justify-end q-mt-xl">
-          <q-btn label="Войти" type="submit" color="primary" />
+          <q-btn
+            label="Войти"
+            type="submit"
+            color="primary"
+            :loading="isLoading"
+          />
           <q-btn
             label="Регистрация"
             color="primary"
@@ -43,15 +56,19 @@
 <script setup>
 import { ref } from "vue";
 import { useRouter } from "vue-router";
+import { useQuasar } from "quasar";
 
 const router = useRouter();
+const $q = useQuasar();
 
 const login = ref("");
 const password = ref("");
+const isLoading = ref(false);
+const showPassword = ref(false);
 
 const onSubmit = async () => {
+  isLoading.value = true;
   try {
-    // Отправка запроса на бэкенд
     const response = await fetch("http://localhost:8000/auth/login", {
       method: "POST",
       headers: {
@@ -66,7 +83,11 @@ const onSubmit = async () => {
     const data = await response.json();
 
     if (response.status === 401) {
-      alert('Неверный логин или пароль!')
+      $q.notify({
+        type: "negative",
+        message: "Неверный логин или пароль",
+        position: "top",
+      });
       return;
     }
 
@@ -74,16 +95,21 @@ const onSubmit = async () => {
       throw new Error(data.detail || "Ошибка авторизации");
     }
 
-    // Сохраняем токен
     localStorage.setItem("access_token", data.access_token);
     localStorage.setItem("token_type", data.token_type);
 
-    // Получаем данные пользователя
     await fetchUserData();
 
-    handleSuccessConfirm();
+    router.push("/equipment");
   } catch (error) {
     console.error("Login error:", error);
+    $q.notify({
+      type: "negative",
+      message: error.message || "Не удалось выполнить вход",
+      position: "top",
+    });
+  } finally {
+    isLoading.value = false;
   }
 };
 
@@ -91,24 +117,15 @@ const fetchUserData = async () => {
   try {
     const token = localStorage.getItem("access_token");
     const response = await fetch("http://localhost:8000/auth/me", {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
+      headers: { Authorization: `Bearer ${token}` },
     });
 
     if (response.ok) {
       const userData = await response.json();
-      // Сохраняем данные пользователя
       localStorage.setItem("user", JSON.stringify(userData));
     }
   } catch (error) {
     console.error("Error fetching user data:", error);
   }
 };
-
-const handleSuccessConfirm = () => {
-  router.push("/equipment");
-};
 </script>
-
-<style scoped></style>
