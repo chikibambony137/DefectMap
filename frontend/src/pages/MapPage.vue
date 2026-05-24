@@ -148,11 +148,11 @@ const delDefect = () => {
       selectedDefect.value = null;
       selectedRows.value = [];
 
-      $q.notify({
-        type: 'positive',
-        message: 'Успешно удалено!',
-        position: 'top'
-      });
+      // $q.notify({
+      //   type: 'positive',
+      //   message: 'Успешно удалено!',
+      //   position: 'top'
+      // });
     } catch (error) {
       $q.notify({
         type: 'negative',

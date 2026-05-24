@@ -179,6 +179,7 @@ const onSubmit = async() => {
 
     emit('registerSuccess');
   } catch (error) {
+    // eslint-disable-next-line
     console.error('Register error:', error);
     $q.notify({
       type: 'negative',

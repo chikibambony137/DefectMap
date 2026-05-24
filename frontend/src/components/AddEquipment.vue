@@ -167,6 +167,7 @@ const onSubmit = async() => {
     emit('added');
     emit('close');
   } catch (error) {
+    // eslint-disable-next-line
     console.error('Ошибка при добавлении прибора:', error);
     $q.notify({
       type: 'negative',

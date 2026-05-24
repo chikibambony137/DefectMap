@@ -186,6 +186,7 @@ const onSubmit = async() => {
     });
     router.push('/login');
   } catch (error) {
+    // eslint-disable-next-line
     console.error('Register error:', error);
     $q.notify({
       type: 'negative',

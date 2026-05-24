@@ -166,15 +166,16 @@ const onSubmit = async() => {
       description: form.value.description.trim()
     });
 
-    $q.notify({
-      type: 'positive',
-      message: 'Дефект успешно зарегистрирован',
-      position: 'top'
-    });
+    // $q.notify({
+    //   type: 'positive',
+    //   message: 'Дефект успешно зарегистрирован',
+    //   position: 'top'
+    // });
 
     emit('added');
     emit('close');
   } catch (error) {
+    // eslint-disable-next-line
     console.error('Ошибка при добавлении дефекта:', error);
     $q.notify({
       type: 'negative',

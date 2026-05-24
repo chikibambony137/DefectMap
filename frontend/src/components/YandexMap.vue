@@ -69,6 +69,7 @@ onMounted(async() => {
     loading.value = false;
     initMap();
   } catch (error) {
+    // eslint-disable-next-line
     console.error('Ошибка загрузки карты:', error);
   }
 });

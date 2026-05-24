@@ -39,6 +39,7 @@ export function useYandexMapLoader() {
         if (window.ymaps) {
           // Функция ymaps.ready выполнит переданный колбэк, когда API будет готов к работе
           window.ymaps.ready(() => {
+            // eslint-disable-next-line
             console.log('Yandex Maps API is ready');
             resolve();
           });
@@ -50,6 +51,7 @@ export function useYandexMapLoader() {
 
       // Обработчик ошибки загрузки скрипта
       script.onerror = () => {
+        // eslint-disable-next-line
         console.error('Failed to load Yandex Maps API script');
         scriptLoadingInProgress = false;
         reject(new Error('Failed to load Yandex Maps API script'));

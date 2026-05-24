@@ -233,6 +233,7 @@ const submit = async() => {
       position: 'top'
     });
   } catch (error) {
+    // eslint-disable-next-line
     console.error('Ошибка при обновлении пользователя:', error);
     $q.notify({
       type: 'negative',

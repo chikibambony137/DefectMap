@@ -171,6 +171,7 @@ const onSubmit = async() => {
     emit('updated');
     emit('close');
   } catch (error) {
+    // eslint-disable-next-line
     console.error('Ошибка при обновлении прибора:', error);
     $q.notify({
       type: 'negative',

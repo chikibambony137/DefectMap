@@ -102,6 +102,7 @@ const onSubmit = async() => {
 
     router.push('/equipment');
   } catch (error) {
+    // eslint-disable-next-line
     console.error('Login error:', error);
     $q.notify({
       type: 'negative',
@@ -125,6 +126,7 @@ const fetchUserData = async() => {
       localStorage.setItem('user', JSON.stringify(userData));
     }
   } catch (error) {
+    // eslint-disable-next-line
     console.error('Error fetching user data:', error);
   }
 };

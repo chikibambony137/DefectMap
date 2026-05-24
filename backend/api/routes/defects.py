@@ -1,3 +1,4 @@
+import json
 from typing import List, Optional
 from datetime import UTC, datetime
 from fastapi import APIRouter, Depends, HTTPException, Query
@@ -15,6 +16,8 @@ from schemas.defect import (
     DefectCreate, DefectUpdate, DefectResponse,
     DefectWithRelations, DefectGeoResponse
 )
+
+from core.redis_client import publish
 
 router = APIRouter(prefix="/defects", tags=["defects"])
 
@@ -95,8 +98,18 @@ def get_defect_by_id(
         defect = db.query(Defect).filter(Defect.id == defect_id).first()
         if not defect:
             raise HTTPException(status_code=404, detail="Дефект не найден")
+        
+        # Преобразуем в словарь без циклических ссылок
         return {
-            **defect.__dict__,
+            "id": defect.id,
+            "title": defect.title,
+            "description": defect.description,
+            "created_at": defect.created_at,
+            "equipment_id": defect.equipment_id,
+            "user_id": defect.user_id,
+            "status_id": defect.status_id,
+            "criticality_id": defect.criticality_id,
+            "defect_type_id": defect.defect_type_id,
             "criticality_name": defect.criticality.name,
             "criticality_weight": defect.criticality.weight,
             "defect_type_name": defect.defect_type.name,
@@ -105,7 +118,7 @@ def get_defect_by_id(
             "equipment_model": defect.equipment.model,
             "user_surname": defect.user.surname,
             "user_name": defect.user.name,
-            "user_login": defect.user.login
+            "user_login": defect.user.login,
         }
 
     return redis_client.get_or_set(f"defects:{defect_id}", 60, fetch_defect)
@@ -135,6 +148,18 @@ def create_defect(
     redis_client.delete_pattern("defects:list:*")
     redis_client.delete("defects:geo:list")
 
+    try:
+        redis_client.publish("defects", "created", json.dumps({
+            "event": "created",
+            "id": defect.id,
+            "title": defect.title,
+            "equipment_model": defect.equipment.model,
+            "equipment_serial_number": defect.equipment.serial_number
+        }))
+        print("📢 Published to Redis")
+    except Exception as e:
+        print(f"❌ Publish failed: {e}")
+
     return defect
 
 
@@ -154,12 +179,29 @@ def update_defect(
     for field, value in update_data.items():
         setattr(defect, field, value)
 
+    defect_id_saved = defect.id
+    defect_title = defect.title
+    equipment_model = defect.equipment.model
+    equipment_serial = defect.equipment.serial_number
+
     db.commit()
     db.refresh(defect)
 
     redis_client.delete(f"defects:{defect_id}")
     redis_client.delete_pattern("defects:list:*")
     redis_client.delete("defects:geo:list")
+
+    try:
+        redis_client.publish("defects", "updated", json.dumps({
+            "event": "updated",
+            "id": defect_id_saved,
+            "title": defect_title,
+            "equipment_model": equipment_model,
+            "equipment_serial_number": equipment_serial
+        }))
+        print("📢 Published to Redis")
+    except Exception as e:
+        print(f"❌ Publish failed: {e}")
 
     return defect
 
@@ -175,9 +217,26 @@ def delete_defect(
     if not defect:
         raise HTTPException(status_code=404, detail="Дефект не найден")
 
+    defect_id_saved = defect.id
+    defect_title = defect.title
+    equipment_model = defect.equipment.model
+    equipment_serial = defect.equipment.serial_number
+
     db.delete(defect)
     db.commit()
 
     redis_client.delete(f"defects:{defect_id}")
     redis_client.delete_pattern("defects:list:*")
     redis_client.delete("defects:geo:list")
+
+    try:
+        redis_client.publish("defects", "deleted", json.dumps({
+            "event": "deleted",
+            "id": defect_id_saved,
+            "title": defect_title,
+            "equipment_model": equipment_model,
+            "equipment_serial_number": equipment_serial
+        }))
+        print("📢 Published to Redis")
+    except Exception as e:
+        print(f"❌ Publish failed: {e}")

@@ -170,15 +170,16 @@ const onSubmit = async() => {
       props.defect.id
     );
 
-    $q.notify({
-      type: 'positive',
-      message: 'Дефект успешно обновлён',
-      position: 'top'
-    });
+    // $q.notify({
+    //   type: 'positive',
+    //   message: 'Дефект успешно обновлён',
+    //   position: 'top'
+    // });
 
     emit('updated');
     emit('close');
   } catch (error) {
+    // eslint-disable-next-line
     console.error('Ошибка при обновлении дефекта:', error);
     $q.notify({
       type: 'negative',

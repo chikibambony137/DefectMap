@@ -86,3 +86,9 @@ def delete_pattern(pattern: str):
             _client.delete(*keys)
     except redis.RedisError as e:
         print(f"Redis error in delete_pattern: {e}")
+
+
+# Websocket func
+def publish(channel: str, event_type: str, data: dict):
+    message = json.dumps({"event": event_type, "data": data})
+    _client.publish(channel, message)
