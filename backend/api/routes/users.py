@@ -101,6 +101,12 @@ def update_user(
     if "password" in update_data and update_data["password"]:
         update_data["hashed_password"] = get_password_hash(
             update_data.pop("password"))
+        
+    # Валидация роли, если меняется
+    if "role_id" in update_data:
+        role = db.query(Role).filter(Role.id == update_data["role_id"]).first()
+        if not role:
+            raise HTTPException(status_code=400, detail="Роль не найдена")
 
     for field, value in update_data.items():
         setattr(user, field, value)

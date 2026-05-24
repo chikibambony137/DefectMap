@@ -41,13 +41,7 @@
               {{ selectedUser.middlename ?? "" }}
             </b>
             <p class="text-grey-7">
-              {{
-                selectedUser.role_id === 1
-                  ? "Администратор"
-                  : selectedUser.role_id === 2
-                    ? "Инженер"
-                    : "Наблюдатель"
-              }}
+              {{ roleOptions.find(r => r.value === selectedUser.role_id)?.label ?? 'Неизвестно' }}
             </p>
           </div>
         </div>
@@ -107,6 +101,17 @@
                   />
                 </template>
               </q-input>
+
+              <q-select
+                filled
+                v-model="selectedUser.role_id"
+                :options="roleOptions"
+                option-value="value"
+                option-label="label"
+                emit-value
+                map-options
+                label="Роль"
+              />
             </div>
           </div>
 
@@ -212,7 +217,8 @@ const submit = async() => {
       surname: selectedUser.value.surname.trim(),
       name: selectedUser.value.name.trim(),
       middlename: selectedUser.value.middlename?.trim() ?? '',
-      login: selectedUser.value.login.trim()
+      login: selectedUser.value.login.trim(),
+      role_id: selectedUser.value.role_id
     };
 
     if (newPassword.value) {
@@ -283,12 +289,18 @@ const deleteUser = () => {
 
 const isAddUserVisible = ref(false);
 
+const roleOptions = [
+  { label: 'Администратор', value: 1 },
+  { label: 'Инженер', value: 2 },
+  { label: 'Наблюдатель', value: 3 }
+];
+
 // prettier-ignore
 const columns = [
   { name: 'surname',    align: 'center', label: 'Фамилия', field: 'surname',    sortable: true, style: 'min-width: 100px; max-width: 100px; word-break: break-word; white-space: normal;' },
   { name: 'name',       align: 'center', label: 'Имя',     field: 'name',       sortable: true, style: 'min-width: 100px; max-width: 100px; word-break: break-word; white-space: normal;' },
   { name: 'middlename', align: 'center', label: 'Отчество', field: 'middlename', sortable: true, style: 'min-width: 100px; max-width: 100px; word-break: break-word; white-space: normal;' },
   { name: 'login',      align: 'center', label: 'Логин',   field: 'login',      sortable: true, style: 'min-width: 100px; max-width: 100px; word-break: break-word; white-space: normal;' },
-  { name: 'role_id',    align: 'center', label: 'Роль',    field: 'role_id',    sortable: true, style: 'min-width: 100px; max-width: 100px; word-break: break-word; white-space: normal;' }
+  { name: 'role_id',    align: 'center', label: 'Роль',    field: 'role_id',    sortable: true, format: (val) => roleOptions.find(r => r.value === val)?.label ?? 'Неизвестно', style: 'min-width: 100px; max-width: 100px; word-break: break-word; white-space: normal;' }
 ];
 </script>
