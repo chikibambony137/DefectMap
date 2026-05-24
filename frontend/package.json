@@ -18,11 +18,15 @@
     "@eslint/js": "^10.0.1",
     "@quasar/extras": "^1.16.4",
     "axios": "^1.15.2",
+    "chart.js": "^4.5.1",
     "dotenv": "^17.4.2",
     "eslint-config-prettier": "^10.1.8",
+    "jspdf": "^4.2.1",
+    "jspdf-autotable": "^5.0.8",
     "pinia": "^3.0.1",
     "quasar": "^2.16.0",
     "vue": "^3.5.22",
+    "vue-chartjs": "^5.3.3",
     "vue-router": "^5.0.3"
   },
   "devDependencies": {

@@ -34,6 +34,15 @@
               >
                 <q-item-section>Пользователи</q-item-section>
               </q-item>
+
+              <q-item
+                v-if="isUserAdmin"
+                clickable
+                v-close-popup
+                @click="$router.push('/dashboard')"
+              >
+                <q-item-section>Статистика</q-item-section>
+              </q-item>
             </q-list>
           </q-menu>
         </q-btn>
