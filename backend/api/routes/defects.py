@@ -17,8 +17,6 @@ from schemas.defect import (
     DefectWithRelations, DefectGeoResponse
 )
 
-from core.redis_client import publish
-
 router = APIRouter(prefix="/defects", tags=["defects"])
 
 
@@ -98,7 +96,7 @@ def get_defect_by_id(
         defect = db.query(Defect).filter(Defect.id == defect_id).first()
         if not defect:
             raise HTTPException(status_code=404, detail="Дефект не найден")
-        
+
         # Преобразуем в словарь без циклических ссылок
         return {
             "id": defect.id,

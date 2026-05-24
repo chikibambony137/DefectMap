@@ -10,13 +10,11 @@ from api.routes import (
     manufacturers_router
 )
 
-
 from fastapi import WebSocket, WebSocketDisconnect
 from core.websocket_manager import manager
 from contextlib import asynccontextmanager
 import asyncio
 import redis.asyncio as redis
-from core.config import settings
 
 
 @asynccontextmanager
@@ -111,9 +109,3 @@ def health_check(db: Session = Depends(get_db)):
             "database": "disconnected",
             "error": str(e)
         }
-
-
-
-
-
-
