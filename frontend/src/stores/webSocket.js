@@ -60,7 +60,9 @@ export const useWebSocketStore = defineStore('websocket', {
       // eslint-disable-next-line
       this.ws.onerror = (error) => console.error('WebSocket error:', error);
 
-      this.ws.onclose = () => {
+      this.ws.onclose = (event) => {
+        // 1001 = сервер закрыл (LOCAL_MODE), не реконнектим
+        if (this._intentionalClose || event.code === 1001) return;
         // eslint-disable-next-line
         console.warn('🔌 WebSocket disconnected, reconnecting in 3s...');
         setTimeout(() => this.connect(), 3000);

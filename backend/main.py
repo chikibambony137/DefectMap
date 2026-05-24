@@ -15,18 +15,25 @@ from core.websocket_manager import manager
 from contextlib import asynccontextmanager
 import asyncio
 import redis.asyncio as redis
+import os
+
+LOCAL_MODE = os.getenv("LOCAL_MODE", "false").lower() == "true"
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    task = asyncio.create_task(listen_to_redis())
-    print("🚀 Redis listener task created")
+    if not LOCAL_MODE:
+        task = asyncio.create_task(listen_to_redis())
+        print("🚀 Redis listener task created")
+    else:
+        print("⚡ LOCAL_MODE: Redis listener skipped")
     yield
-    task.cancel()
-    try:
-        await task
-    except asyncio.CancelledError:
-        print("Redis listener stopped")
+    if not LOCAL_MODE:
+        task.cancel()
+        try:
+            await task
+        except asyncio.CancelledError:
+            print("Redis listener stopped")
 
 app = FastAPI(title="DefectMap API", lifespan=lifespan)
 
@@ -59,10 +66,12 @@ async def listen_to_redis():
 
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
+    if LOCAL_MODE:
+        await websocket.close(code=1001)  # 1001 = Going Away
+        return
     await manager.connect(websocket)
     try:
         while True:
-            # Ждём сообщения от клиента (если нужно)
             await websocket.receive_text()
     except WebSocketDisconnect:
         manager.disconnect(websocket)
