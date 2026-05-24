@@ -67,10 +67,19 @@ def get_equipment_with_stats(
             ).count() if open_status_id else 0
 
             result.append({
-                **eq.__dict__,
+                "id": eq.id,
+                "serial_number": eq.serial_number,
+                "model": eq.model,
+                "manufacturer_id": eq.manufacturer_id,
+                "location_address": eq.location_address,
+                "latitude": eq.latitude,
+                "longitude": eq.longitude,
+                "installation_date": eq.installation_date,
+                "status_id": eq.status_id,
                 "defects_count": defects_count,
                 "open_defects_count": open_defects
             })
+            
         return result
 
     return redis_client.get_or_set("equipment:with-stats",
