@@ -22,7 +22,7 @@ class Settings(BaseSettings):
 
     # Настройки приложения
     PROJECT_NAME: str = "DefectMap"
-    VERSION: str = "0.0.1"
+    VERSION: str = "1.0.0"
     DESCRIPTION: str = "API для учёта дефектов электротехнических приборов"
 
     model_config = ConfigDict(
