@@ -79,7 +79,7 @@ def get_equipment_with_stats(
                 "defects_count": defects_count,
                 "open_defects_count": open_defects
             })
-            
+
         return result
 
     return redis_client.get_or_set("equipment:with-stats",
